@@ -9,6 +9,23 @@
 Adds an inline GUI/CMS to DocPad
 
 
+## Preview
+
+### Edit Page
+
+![Edit Page Preview](https://raw.github.com/docpad/docpad-plugin-inlinegui/master/resources/images/edit-page.jpg)
+
+
+### Edit Site
+
+![Edit Site Preview](https://raw.github.com/docpad/docpad-plugin-inlinegui/master/resources/images/edit-site.jpg)
+
+### File Manager
+
+![File Manager Preview](https://raw.github.com/docpad/docpad-plugin-inlinegui/master/resources/images/file-manager.jpg)
+
+
+
 ## Install
 
 ```
