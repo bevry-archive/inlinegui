@@ -1,46 +1,53 @@
 {
-	"name": "html5-boilerplate.docpad",
-	"version": "0.1.0",
-	"private": true,
-	"description": "HTML5 Boilerplate skeleton for DocPad. Bare essentials for building a modern website with best practices.",
-	"homepage": "https://github.com/docpad/html5-boilerplate.docpad",
-	"keywords": [
-		"docpad-skeleton",
-		"docpad",
-		"website",
-		"skeleton",
-		"html5 boilerplate",
-		"h5bp"
-	],
-	"author": "Bevry Pty Ltd <us@bevry.me> (http://bevry.me)",
-	"maintainers": [
-		"Benjamin Lupton <b@lupton.cc> (http://balupton.com)"
-	],
-	"contributors": [
-		"Benjamin Lupton <b@lupton.cc> (http://balupton.com)"
-	],
-	"bugs": {
-		"url": "https://github.com/docpad/html5-boilerplate.docpad/issues"
-	},
-	"repository" : {
-		"type" : "git",
-		"url" : "http://github.com/docpad/html5-boilerplate.docpad.git"
-	},
-	"engines" : {
-		"node": "0.8.x",
-		"npm": "1.1.x"
-	},
-	"dependencies": {
-		"docpad": "6.x",
-		"docpad-plugin-coffeescript": "2.x",
-		"docpad-plugin-eco": "2.x",
-		"docpad-plugin-marked": "2.x",
-		"docpad-plugin-partials": "2.x",
-		"docpad-plugin-stylus": "2.x",
-		"docpad-plugin-text": "2.x"
-	},
-	"devDependencies": {
-		"docpad-plugin-livereload": "2.x"
-	},
-	"main": "node_modules/docpad/bin/docpad-server"
+  "name": "docpad-plugin-inlinegui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An inline GUI/CMS for DocPad",
+  "homepage": "https://github.com/docpad/docpad-plugin-inlinegui",
+  "keywords": [
+    "docpad-plugin",
+    "docpad",
+    "gui",
+    "cms",
+    "inline",
+    "contenteditable"
+  ],
+  "author": "Myplanet Internet Solutions Ltd. <hello@myplanetdigital.com> (http://www.myplanetdigital.com/)",
+  "maintainers": [
+    "Neil Taylor <neil.t@myplanetdigital.com> (https://github.com/neilbaylorrulez)",
+    "Benjamin Lupton <b@lupton.cc> (https://github.com/balupton)"
+  ],
+  "contributors": [
+    "Benjamin Lupton <b@lupton.cc> (http://balupton.com)"
+  ],
+  "bugs": {
+    "url": "https://github.com/docpad/docpad-plugin-inlinegui/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/docpad/docpad-plugin-inlinegui.git"
+  },
+  "license": {
+    "type": "MIT",
+    "url": "https://github.com/docpad/docpad-plugin-inlinegui/blob/master/LICENSE.md#readme"
+  },
+  "engines": {
+    "node": ">=0.8",
+    "npm": ">=1.2"
+  },
+  "dependencies": {
+    "docpad": "~6.50.0",
+    "docpad-plugin-coffeescript": "~2.2.2",
+    "docpad-plugin-eco": "~2.0.2",
+    "docpad-plugin-marked": "~2.1.1",
+    "docpad-plugin-partials": "~2.7.2",
+    "docpad-plugin-stylus": "~2.4.0",
+    "docpad-plugin-text": "~2.3.0",
+    "docpad-plugin-restapi": "~2.0.0",
+    "docpad-plugin-coffeekup": "~2.2.0"
+  },
+  "devDependencies": {
+    "docpad-plugin-livereload": "~2.5.2"
+  },
+  "main": "node_modules/docpad/bin/docpad-server"
 }
