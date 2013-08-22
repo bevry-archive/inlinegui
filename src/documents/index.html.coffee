@@ -54,25 +54,24 @@ aside '.app', ->
 
 			div '.content-table', ->
 				div '.content-row.content-row-header', ->
-					div '.content-cell.content-title', ->
+					div '.content-cell.content-name', ->
 						'Title'
-					div '.content-cell.content-buttons', ->
-						''
 					div '.content-cell.content-tags', ->
 						'Tags'
 					div '.content-cell.content-date', ->
 						'Date'
 				for file in @getCollection('database').toJSON()
 					div '.content-row', ->
-						div '.content-cell.content-title', ->
-							file.name
-						div '.content-cell.content-buttons', ->
-							span '.button.button-edit', ->
-								span '.icon.icon-edit', ->
-								text 'Edit'
-							span '.button.button-delete', ->
-								span '.icon.icon-trash', ->
-								text 'Delete'
+						div '.content-cell.content-name', ->
+							span '.content-title', title:'Open file', ->
+								file.name
+							span '.content-buttons', ->
+								span '.button.button-edit', title:'Edit file', ->
+									span '.icon.icon-edit', ->
+									text 'Edit'
+								span '.button.button-delete', title:'Delete file', ->
+									span '.icon.icon-trash', ->
+									text 'Delete'
 						div '.content-cell.content-tags', ->
 							file.tags?.join(', ')
 						div '.content-cell.content-date', ->

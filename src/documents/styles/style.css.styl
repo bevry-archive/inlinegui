@@ -130,7 +130,6 @@ body
 	height: heightNavbar
 	line-height: 100%
 	color: colorMenuForeground
-	transition: all 0.3s ease-out
 	z-index: 500
 
 	.left
@@ -159,13 +158,12 @@ body
 	.link
 		line-height: (heightNavbar)
 		font-size:   (heightNavbar / 2)
-		margin: 0 1em 0 0
+		padding: 0 paddingBodySides
 		font-family: fontFamilyHeader
 		font-weight: 400
 		position: relative
 
 		&.link-site
-			padding: 0 paddingBodySides
 			&, &:after
 				background: colorSiteBackground
 			&:before
@@ -303,6 +301,7 @@ body
 		margin: 0.2em 0
 
 	.content-table
+		width: 100%
 		line-height: 200%
 		font-size: 80%
 		display: table
@@ -312,20 +311,32 @@ body
 			display: table-row
 			color: black
 			border-bottom: 1px solid rgba(0,0,0, 0.2)
+			cursor: pointer
+
 		.content-row-header
 			font-weight: 500
 			color: black
 			border-bottom: 1px solid black
+
 		.content-cell
 			display: table-cell
-			width: 20%
+			width: 30%
+			&.content-name
+				width: 50%
+			&.content-tags
+			&.content-date
+				width: 25%
 
-		.button
-			font-weight: 500
+		.content-buttons
 			opacity: 0
-			transition: all 0.2s linear
-			&:hover
-				color: colorSiteBackground
+			float: right
 
-		.content-row:hover .button
-			opacity: 1
+		.button:hover
+		.content-name:hover .content-title
+			text-decoration: underline
+			color: colorSiteBackground
+
+		.content-row:hover
+			font-weight: bold
+			.content-buttons
+				opacity: 1

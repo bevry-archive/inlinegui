@@ -6,7 +6,7 @@ class App
 
 	domReady: =>
 		$('.link-site').click(@siteMode)
-		$('.button-edit').click(@pageMode)
+		$('.button-edit, .content-name').click(@pageMode)
 
 		$('.toggle').click ->
 			$this = $(this)
@@ -39,6 +39,9 @@ class App
 			$('.app').addClass('app-ready')
 
 	pageMode: (e) =>
+		e.preventDefault()
+		e.stopPropagation()
+
 		$target = $(e.target)
 		$row = $target.parents('.content-row:first')
 
@@ -50,10 +53,23 @@ class App
 		$('.app')
 			.removeClass('app-site')
 			.addClass('app-page')
-		$('.link-page')
-			.text(title)
-			.addClass('active')
-			.siblings().removeClass('active')
+			.find('.navbar')
+				.find('.link')
+					.removeClass('active')
+					.end()
+				.find('.link-page')
+					.text(title)
+					.addClass('active')
+					.end()
+				.find('.toggle')
+					.removeClass('active')
+					.end()
+				.find('.toggle-preview')
+					.addClass('active')
+					.end()
+
+		if $target.hasClass('button-edit')
+			$('.toggle-meta').addClass('active')
 
 	siteMode: =>
 		$('.app')
