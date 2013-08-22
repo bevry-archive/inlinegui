@@ -14,19 +14,25 @@
 // ====================================
 // Variables
 
-colorBackgroundDisabled = #999
+colorDisabledBackground = #999
 colorCancelBackground = #ee1c25
 colorSaveBackground = #8dc73f
 colorPageBackground = #31afbe
 colorSiteBackground = #e76267
+colorInactiveBackground = colorDisabledBackground
 colorBackground = #f4f3ee
 colorForeground = #353c46
-colorMenuForeground = #f3f3f1
+colorMenuForeground = white
 colorLabelForeground = #363a43
 colorBorder = #d8d7d2
 
 colorLoaderSave = #5FE451
 colorLoaderCancel = colorCancelBackground
+
+fontFamilyHeader = Oswald, Ubuntu, "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+fontFamilyBody = Ubuntu, "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+heightNavbar = 40px
 
 
 // ====================================
@@ -45,9 +51,10 @@ body
 	color-profile: sRGB
 	rendering-intent: auto
 	text-rendering: optimizeLegibility
-	font-family: Ubuntu
+	font-family: fontFamilyBody
 
-aside.loadbar
+.loadbar
+	z-index: 1000
 	height: 2px
 	position: fixed
 	top: 0
@@ -72,115 +79,96 @@ aside.loadbar
 		left: 100%
 
 .app
-	&.site
+	opacity: 0
+	position: relative
+	padding-top: heightNavbar
+
+	&.app-ready
+		opacity: 1
+
+	&.app-site
 		.switch
-		nav.topbar
+		nav.navbar
 			background: colorSiteBackground
-			.save
-			.cancel
+			.button-save
+			.button-cancel
 				display: none
 		.title
 			color: colorSiteBackground
-	&.page
+
+	&.app-page
 		.switch
-		nav.topbar
+		nav.navbar
 			background: colorPageBackground
 		.title
 			color: colorPageBackground
 
-nav.topbar
-	color: colorMenuForeground
-	border-bottom: 1px solid colorBorder
-	text-align: center
+.sitebar
+	width: 100%
+	border: 0
+	margin: 0
+	padding: 0
 
-	.links
-	.buttons
+.navbar
+	position: fixed
+	top: 0
+	left: 0
+	width:  100%
+	height: heightNavbar
+	line-height: 100%
+	color: colorMenuForeground
+	background: colorInactiveBackground
+	transition: all 0.3s ease-out
+	z-index: 500
+
+	.left
+	.right
+		display: inline-block
+		position: absolute
+		top: 0
+		left: 0
+		z-index: 300
+
+	.left
+		left: 2.5%
+	.right
+		text-align: right
+		left: none
+		right: 0
+		z-index: 299
+
+	.button
+	.link
 	.status
 		display: inline-block
-		width: 30%
+		margin: 0 0.5em 0 0
 
-	.links
-		text-align: left
-		padding: 0.3em
-	.buttons
-		width: 35%
-		text-align: right
-		float: right
-
-	.site
-	.page
-	.save
-	.cancel
-	.toggle
-		display: inline-block
+	.button
+	.link
 		text-transform: uppercase
 		cursor: pointer
 
-	.toggle
-		background: rgba(0,0,0, 0.1)
-		border-left: 1px solid rgba(0,0,0, 0.2)
-		padding: 0.4em 0.5em
-		width: 2em
-		.icon
-			display: inline-block
-			transition: all 0.2s ease-out
-		&.active
-			.icon
-				transform: rotate(180deg)
-
-	.save
-	.cancel
-		font-size: 90%
-		font-weight: 500
-		border-radius: 3px
-		margin: 0.25em
-		padding: 0.25em
-		border: 1px solid rgba(0,0,0, 0.2)
-		border-top: 1px solid rgba(255,255,255, 0.1)
-		border-left: 1px solid rgba(255,255,255, 0.1)
-		text-shadow: 1px 1px 1px rgba(0,0,0, 0.2)
-		width: 110px
-		text-align: center
-		transition: all 0.2s ease-out
-		&:hover
-			border: 1px solid rgba(0,0,0, 0.5)
-			border-top: 1px solid rgba(255,255,255, 0.2)
-			border-left: 1px solid rgba(255,255,255, 0.3)
-			text-shadow: 1px 1px 1px rgba(0,0,0, 0.3)
-		&.active
-		&.disabled
-			background: colorBackgroundDisabled
-			cursor: default
-		&.active
-			.inactive-text
-				display: none
-			.active-text
-				display: inline
-		.active-text
-			display: none
-
-	.save
-		background: colorSaveBackground
-	.cancel
-		background: colorCancelBackground
-
 	.link
-		font-size: 120%
+		line-height: (heightNavbar)
+		font-size:   (heightNavbar / 2)
+		margin: 0 1em 0 0
+		font-family: fontFamilyHeader
 		font-weight: 400
-		margin: 0 0.25em
 		position: relative
 		&:hover
 			text-decoration: underline
+
 		.switch
+			transition: all 0.3s ease-out
 			position: absolute
 			display: none
-			border: 1px solid colorBorder
+			border: 1px solid rgba(0,0,0, 0.1)
 			border-left: none
 			border-top: none
 			height: 10px
 			width: 10px
-			top: 25px
-			left: 35%
+			left: 40%
+			bottom: -5px
 			transform: rotate(45deg)
 		&.active
 			.switch
@@ -191,18 +179,65 @@ nav.topbar
 		font-weight: 500
 		opacity: 0.90
 
-section.main
+	.button-save
+	.button-cancel
+		line-height: (heightNavbar / 12 * 8)
+		font-size:   (heightNavbar / 12 * 4.5)
+		padding: 0 (heightNavbar / 12 * 3)
+		font-weight: 500
+		border-radius: 3px
+		border: 1px solid rgba(0,0,0, 0.2)
+		border-top: 1px solid rgba(255,255,255, 0.1)
+		border-left: 1px solid rgba(255,255,255, 0.1)
+		text-shadow: 1px 1px 1px rgba(0,0,0, 0.2)
+		min-width: 110px
+		text-align: center
+		transition: all 0.2s ease-out
+		&:hover
+			border: 1px solid rgba(0,0,0, 0.5)
+			border-top: 1px solid rgba(255,255,255, 0.2)
+			border-left: 1px solid rgba(255,255,255, 0.3)
+			text-shadow: 1px 1px 1px rgba(0,0,0, 0.3)
+		&.active
+		&.disabled
+			background: colorDisabledBackground
+			cursor: default
+		&.active
+			.inactive-text
+				display: none
+			.active-text
+				display: inline
+		.active-text
+			display: none
+
+	.button-save
+		background: colorSaveBackground
+	.button-cancel
+		background: colorCancelBackground
+
+	.button-toggle
+		line-height: (heightNavbar)
+		font-size:   (heightNavbar / 12 * 4.5)
+		padding: 0 (heightNavbar / 12 * 3)
+		margin: 0
+		background: rgba(0,0,0, 0.1)
+		border-left: 1px solid rgba(0,0,0, 0.2)
+		.icon
+			display: inline-block
+			transition: all 0.2s ease-out
+		&.active
+			.icon
+				transform: rotate(180deg)
+
+.mainbar
+	width: 100%
+	padding: 1em 5%
+
 	background: colorBackground
 	color: colorForeground
-	max-height: 0
-	overflow: hidden
 	transition: all 0.5s ease-out
-
-	&.active
-		max-height: 200px
-
-	.container
-		padding: 1em
+	overflow: auto
+	z-index: 400
 
 	header
 		margin-bottom: 0.5em
@@ -217,3 +252,5 @@ section.main
 		font-weight: 500
 		display: block
 		margin: 0.2em 0
+
+

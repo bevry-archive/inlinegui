@@ -3,56 +3,59 @@ layout: 'default'
 title: 'Inline GUI'
 ---
 
-aside '.loadbar', ->
+aside '.app.page-active.mainbar-active', ->
+	aside '.loadbar', ->
 
-aside '.app.page', ->
-	nav '.topbar', ->
-		span '.links', ->
-			span '.site.link', ->
+	nav '.navbar', ->
+		span '.left', ->
+			span '.link.link-site', ->
 				text 'Site'
 				span '.switch', ->
 
-			span '.page.link.active', ->
+			span '.link.link-page', ->
 				text 'Page'
 				span '.switch', ->
 
-		span '.status', ->
-			'Changes saved at 10:41am'
+		span '.right', ->
+			span '.status', ->
+				'Changes saved at 10:41am'
 
-		span '.buttons', ->
-			span '.save.button', 'data-loadclassname':'save', ->
+			span '.button.button-save', 'data-loadclassname':'save', ->
 				span '.active-text', ->
 					'Saving...'
 				span '.inactive-text', ->
 					'Save'
 
-			span '.cancel.button', 'data-loadclassname':'cancel', ->
+			span '.button.button-cancel', 'data-loadclassname':'cancel', ->
 				span '.active-text', ->
 					'Cancelling...'
 				span '.inactive-text', ->
 					'Cancel'
 
-			span '.toggle', ->
+			span '.button.button-toggle', ->
 				span '.icon.icon-chevron-down', ->
 
-	section '.main', ->
-		div '.container', ->
-			header ->
-				span '.title', ->
-					'Page Settings'
+	section '.mainbar', ->
+		header ->
+			span '.title', ->
+				'Page Settings'
 
-			div '.body', ->
+		div '.body', ->
 
-				div '.field.field-title', ->
-					label ->
-						'Title'
-					input type:'text', ->
+			div '.field.field-title', ->
+				label ->
+					'Title'
+				input type:'text', ->
 
-				div '.field.field-date', ->
-					label ->
-						'Publish Date'
-					input type:'date', ->
+			div '.field.field-date', ->
+				label ->
+					'Publish Date'
+				input type:'date', ->
 
-				div '.field.field-author', ->
-					label ->
-						'Author'
+			div '.field.field-author', ->
+				label ->
+					'Author'
+				select ->
+					option -> 'Benjamin Lupton'
+
+	iframe '.sitebar', src:'/site.html', ->

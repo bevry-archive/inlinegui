@@ -1,25 +1,53 @@
-$('.links .link').click ->
-	$this = $(this)
-	$app = $('.app')
+wait = (delay,fn) -> setTimeout(fn,delay)
 
-	$this.addClass('active').siblings().removeClass('active')
-	if $this.hasClass('page')
-		$app.removeClass('site').addClass('page')
-	else if $this.hasClass('site')
-		$app.removeClass('page').addClass('site')
+class App
+	constructor: ->
+		$(@domReady)
 
-$('.buttons .button').click ->
-	$this = $(this)
-	$loadbar = $('.loadbar')
-	if $loadbar.hasClass('active') is false or $loadbar.data('for') is this
-		$this.siblings('.button').toggleClass('disabled')
-		$this.toggleClass('active')
-		$loadbar
-			.toggleClass('active')
-			.toggleClass($this.data('loadclassname'))
-			.data('for', this)
+	domReady: =>
+		$('.navbar .link').click ->
+			$this = $(this)
+			$app = $('.app')
 
-$('.buttons .toggle').click ->
-	$this = $(this)
-	$this.toggleClass('active')
-	$('section.main').toggleClass('active')
+			$this.addClass('active').siblings().removeClass('active')
+
+			if $this.hasClass('link-page')
+				$app
+					.removeClass('app-site')
+					.addClass('app-page')
+
+			else if $this.hasClass('link-site')
+				$app
+					.addClass('app-site')
+					.removeClass('app-page')
+
+		$('.navbar .button:not(.button-toggle)').click ->
+			$this = $(this)
+			$loadbar = $('.loadbar')
+
+			if $loadbar.hasClass('active') is false or $loadbar.data('for') is this
+				$this.siblings('.button').toggleClass('disabled')
+				$this.toggleClass('active')
+				$loadbar
+					.toggleClass('active')
+					.toggleClass($this.data('loadclassname'))
+					.data('for', this)
+
+		$('.navbar .button-toggle').click ->
+			$this = $(this)
+			$this.toggleClass('active')
+			$('.mainbar').toggleClass('active')
+
+		$('.sitebar').css(
+			'min-height': $(window).height() - $('.navbar').outerHeight()
+		)
+
+		wait 3, ->
+			$('.app').addClass('app-ready')
+
+	resize: (size) =>
+		$('.sitebar').height(size)
+
+app = new App()
+
+window.resizeIframe = app.resize.bind(app)
