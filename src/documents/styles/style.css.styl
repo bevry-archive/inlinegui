@@ -115,6 +115,7 @@ body
 	padding: 0
 
 .navbar
+	font-size: 0
 	user-select: none
 	position: fixed
 	top: 0
@@ -186,7 +187,8 @@ body
 				display: inline-block
 
 	.status
-		font-size: 75%
+		line-height: (heightNavbar)
+		font-size: (heightNavbar / 3)
 		font-weight: 500
 		opacity: 0.90
 
@@ -226,7 +228,10 @@ body
 	.button-cancel
 		background: colorCancelBackground
 
-	.button-toggle
+	.button-meta
+	.button-source
+		text-align: center
+		width: 40px
 		line-height: (heightNavbar)
 		font-size:   (heightNavbar / 12 * 4.5)
 		padding: 0 (heightNavbar / 12 * 3)
@@ -236,9 +241,6 @@ body
 		.icon
 			display: inline-block
 			transition: all 0.2s ease-out
-		&.active
-			.icon
-				transform: rotate(180deg)
 
 .mainbar
 	width: 100%

@@ -32,8 +32,16 @@ aside '.app.page-active.mainbar-active', ->
 				span '.inactive-text', ->
 					'Cancel'
 
-			span '.button.button-toggle', ->
-				span '.icon.icon-chevron-down', ->
+			span '.button.button-meta', ->
+				span '.icon.icon-info', ->
+
+			span '.button.button-source', ->
+				span '.icon.icon-code', ->
+				#span '.icon.icon-reorder', ->
+				#span '.icon.icon-info-sign', ->
+				#span '.icon.icon-cog', ->
+				#span '.icon.icon-code', ->
+				#span '.icon.icon-list', ->
 
 	section '.mainbar', ->
 		header ->
