@@ -81,12 +81,15 @@ body
 	100%
 		left: 100%
 
+.toggle
 .button
 .link
 	text-transform: uppercase
 	cursor: pointer
 
 .app
+	color: colorForeground
+	background: colorBackground
 	opacity: 0
 	position: relative
 	padding-top: heightNavbar
@@ -146,6 +149,7 @@ body
 		right: 0
 		z-index: 299
 
+	.toggle
 	.button
 	.link
 	.status
@@ -262,9 +266,7 @@ body
 	.button-cancel
 		background: colorCancelBackground
 
-	.button-preview
-	.button-meta
-	.button-source
+	.toggle
 		text-align: center
 		width: 40px
 		line-height: (heightNavbar)
@@ -282,9 +284,6 @@ body
 .mainbar
 	width: 100%
 	padding: 1em paddingBodySides
-
-	background: colorBackground
-	color: colorForeground
 	transition: all 0.5s ease-out
 	overflow: auto
 	z-index: 400

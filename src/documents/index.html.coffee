@@ -15,8 +15,8 @@ aside '.app', ->
 				text 'Page'
 
 		span '.right.show-page', ->
-			span '.status', ->
-				'Changes saved at 10:41am'
+			#span '.status', ->
+			#	'Changes saved at 10:41am'
 
 			span '.button.button-save', 'data-loadclassname':'save', ->
 				span '.active-text', ->
@@ -30,10 +30,10 @@ aside '.app', ->
 				span '.inactive-text', ->
 					'Cancel'
 
-			span '.button.button-source', ->
+			span '.toggle.toggle-source', ->
 				span '.icon.icon-code', ->
 
-			span '.button.button-meta', ->
+			span '.toggle.toggle-meta', ->
 				span '.icon.icon-info', ->
 				#span '.icon.icon-reorder', ->
 				#span '.icon.icon-info-sign', ->
@@ -41,7 +41,7 @@ aside '.app', ->
 				#span '.icon.icon-code', ->
 				#span '.icon.icon-list', ->
 
-			span '.button.button-preview', ->
+			span '.toggle.toggle-preview', ->
 				span '.icon.icon-globe', ->
 				#span '.icon.icon-eye-open', ->
 

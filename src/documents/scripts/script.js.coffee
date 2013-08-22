@@ -8,7 +8,11 @@ class App
 		$('.link-site').click(@siteMode)
 		$('.button-edit').click(@pageMode)
 
-		$('.navbar .button:not(.button-toggle)').click ->
+		$('.toggle').click ->
+			$this = $(this)
+			$this.toggleClass('active')
+
+		$('.navbar .button').click ->
 			$this = $(this)
 			$loadbar = $('.loadbar')
 
