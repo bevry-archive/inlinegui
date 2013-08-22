@@ -5,21 +5,8 @@ class App
 		$(@domReady)
 
 	domReady: =>
-		$('.navbar .link').click ->
-			$this = $(this)
-			$app = $('.app')
-
-			$this.addClass('active').siblings().removeClass('active')
-
-			if $this.hasClass('link-page')
-				$app
-					.removeClass('app-site')
-					.addClass('app-page')
-
-			else if $this.hasClass('link-site')
-				$app
-					.addClass('app-site')
-					.removeClass('app-page')
+		$('.link-site').click(@siteMode)
+		$('.button-edit').click(@pageMode)
 
 		$('.navbar .button:not(.button-toggle)').click ->
 			$this = $(this)
@@ -42,8 +29,35 @@ class App
 			'min-height': $(window).height() - $('.navbar').outerHeight()
 		)
 
+		@siteMode()
+
 		wait 3, ->
 			$('.app').addClass('app-ready')
+
+	pageMode: (e) =>
+		$target = $(e.target)
+		$row = $target.parents('.content-row:first')
+
+		if $row.length
+			title = $row.find('.content-title:first').text()
+		else
+			title = 'Page'
+
+		$('.app')
+			.removeClass('app-site')
+			.addClass('app-page')
+		$('.link-page')
+			.text(title)
+			.addClass('active')
+			.siblings().removeClass('active')
+
+	siteMode: =>
+		$('.app')
+			.removeClass('app-page')
+			.addClass('app-site')
+		$('.link-site')
+			.addClass('active')
+			.siblings().removeClass('active')
 
 	resize: (size) =>
 		$('.sitebar').height(size)

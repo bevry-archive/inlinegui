@@ -3,20 +3,18 @@ layout: 'default'
 title: 'Inline GUI'
 ---
 
-aside '.app.page-active.mainbar-active', ->
+aside '.app', ->
 	aside '.loadbar', ->
 
 	nav '.navbar', ->
 		span '.left', ->
 			span '.link.link-site', ->
-				text 'Site'
-				span '.switch', ->
+				text 'Admin'
 
-			span '.link.link-page', ->
+			span '.link.link-page.show-page', ->
 				text 'Page'
-				span '.switch', ->
 
-		span '.right.actions-page', ->
+		span '.right.show-page', ->
 			span '.status', ->
 				'Changes saved at 10:41am'
 
@@ -43,10 +41,10 @@ aside '.app.page-active.mainbar-active', ->
 				#span '.icon.icon-code', ->
 				#span '.icon.icon-list', ->
 
-	section '.mainbar', ->
+	section '.mainbar.show-site', ->
 		header ->
 			span '.title', ->
-				'Page Settings'
+				'Database Listing'
 
 		div '.body', ->
 
@@ -76,6 +74,13 @@ aside '.app.page-active.mainbar-active', ->
 						div '.content-cell.content-date', ->
 							file.date.toLocaleDateString()
 
+	section '.mainbar.show-page', ->
+		header ->
+			span '.title', ->
+				'Page Settings'
+
+		div '.body', ->
+
 			div '.field.field-title', ->
 				label ->
 					'Title'
@@ -92,4 +97,4 @@ aside '.app.page-active.mainbar-active', ->
 				select ->
 					option -> 'Benjamin Lupton'
 
-	iframe '.sitebar', src:'/site.html', ->
+	iframe '.sitebar.show-page', src:'/site.html', ->

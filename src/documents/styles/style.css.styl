@@ -5,7 +5,7 @@
 @import 'nib'
 
 // Ubuntu Font
-@import url(http://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700,300italic,400italic,500italic,700italic);
+@import url(http://fonts.googleapis.com/css?family=Ubuntu:300,400,500,700,300italic,400italic,500italic,700italic)
 
 // Font Awesome
 @import url(/vendor/font-awesome/css/font-awesome.css)
@@ -29,10 +29,13 @@ colorBorder = #d8d7d2
 colorLoaderSave = #5FE451
 colorLoaderCancel = colorCancelBackground
 
-fontFamilyHeader = Oswald, Ubuntu, "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-fontFamilyBody = Ubuntu, "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+fontFamilyHeader = Oswald, Ubuntu, "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif
+fontFamilyBody = Ubuntu, "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif
 
 heightNavbar = 40px
+heightSwitch = 5px
+
+paddingBodySides = 15px
 
 
 // ====================================
@@ -92,22 +95,23 @@ body
 		opacity: 1
 
 	&.app-site
-		.switch
 		nav.navbar
 			background: colorSiteBackground
-			.actions-page
-				display: none
 		.title
 			color: colorSiteBackground
+		.show-page
+			display: none
 
 	&.app-page
-		.switch
 		nav.navbar
 			background: colorPageBackground
 		.title
 			color: colorPageBackground
+		.show-site
+			display: none
 
 .sitebar
+	background: white
 	width: 100%
 	border: 0
 	margin: 0
@@ -123,7 +127,6 @@ body
 	height: heightNavbar
 	line-height: 100%
 	color: colorMenuForeground
-	background: colorInactiveBackground
 	transition: all 0.3s ease-out
 	z-index: 500
 
@@ -136,7 +139,7 @@ body
 		z-index: 300
 
 	.left
-		left: 2.5%
+		left: 0
 	.right
 		text-align: right
 		left: none
@@ -156,7 +159,40 @@ body
 		font-family: fontFamilyHeader
 		font-weight: 400
 		position: relative
-		opacity: 0.5
+
+		&.link-site
+			padding: 0 paddingBodySides
+			&, &:after
+				background: colorSiteBackground
+			&:before
+				border: heightSwitch solid colorSiteBackground
+
+		&.link-page
+			&, &:after
+				background: colorPageBackground
+			&:before
+				border: heightSwitch solid colorPageBackground
+
+		&.link-site.active
+		&.link-page
+			&:before
+				top: (heightNavbar - heightSwitch)
+				left: 50%
+			&:after
+				height: (heightSwitch * 1.5)
+				width: 40%
+				bottom: 0
+				left: 30%
+
+		&.link-site:not(.active)
+			&:before
+				top: (heightNavbar / 2 - heightSwitch)
+				right: (heightSwitch * -1)
+			&:after
+				width: (heightSwitch * 1.5)
+				height: 40%
+				right: 0
+				top: 30%
 
 		&:not(.disabled)
 			&:hover
@@ -169,21 +205,20 @@ body
 			opacity: 0
 			cursor: default
 
-		.switch
-			transition: all 0.3s ease-out
-			position: absolute
-			display: none
-			border: 1px solid rgba(0,0,0, 0.1)
-			border-left: none
-			border-top: none
-			height: 10px
-			width: 10px
-			left: 40%
-			bottom: -5px
+		&:before
+			width: 0
+			height: 0
+			//border-radius: 3px
 			transform: rotate(45deg)
-		&.active
-			.switch
-				display: inline-block
+			content: ''
+			position: absolute
+			margin-left: (heightSwitch * -1)
+			//box-shadow: 0 0 3px rgba(0, 0, 0, 0.5)
+
+		&:after
+			position: absolute
+			display: block
+			content: ''
 
 	.status
 		line-height: (heightNavbar)
@@ -245,7 +280,7 @@ body
 
 .mainbar
 	width: 100%
-	padding: 1em 2.5%
+	padding: 1em paddingBodySides
 
 	background: colorBackground
 	color: colorForeground
