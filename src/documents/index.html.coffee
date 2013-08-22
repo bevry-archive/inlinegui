@@ -16,7 +16,7 @@ aside '.app.page-active.mainbar-active', ->
 				text 'Page'
 				span '.switch', ->
 
-		span '.right', ->
+		span '.right.actions-page', ->
 			span '.status', ->
 				'Changes saved at 10:41am'
 
