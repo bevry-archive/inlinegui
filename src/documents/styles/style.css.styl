@@ -155,8 +155,18 @@ body
 		font-family: fontFamilyHeader
 		font-weight: 400
 		position: relative
-		&:hover
-			text-decoration: underline
+		opacity: 0.5
+
+		&:not(.disabled)
+			&:hover
+				text-decoration: underline
+			&:hover
+			&.active
+				opacity: 1
+
+		&.disabled
+			opacity: 0.1
+			cursor: default
 
 		.switch
 			transition: all 0.3s ease-out
@@ -231,7 +241,7 @@ body
 
 .mainbar
 	width: 100%
-	padding: 1em 5%
+	padding: 1em 2.5%
 
 	background: colorBackground
 	color: colorForeground
