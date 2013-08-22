@@ -78,6 +78,11 @@ body
 	100%
 		left: 100%
 
+.button
+.link
+	text-transform: uppercase
+	cursor: pointer
+
 .app
 	opacity: 0
 	position: relative
@@ -143,11 +148,6 @@ body
 	.status
 		display: inline-block
 		margin: 0 0.5em 0 0
-
-	.button
-	.link
-		text-transform: uppercase
-		cursor: pointer
 
 	.link
 		line-height: (heightNavbar)
@@ -264,4 +264,30 @@ body
 		display: block
 		margin: 0.2em 0
 
+	.content-table
+		line-height: 200%
+		font-size: 80%
+		display: table
+		border-collapse: collapse
 
+		.content-row
+			display: table-row
+			color: black
+			border-bottom: 1px solid rgba(0,0,0, 0.2)
+		.content-row-header
+			font-weight: 500
+			color: black
+			border-bottom: 1px solid black
+		.content-cell
+			display: table-cell
+			width: 20%
+
+		.button
+			font-weight: 500
+			opacity: 0
+			transition: all 0.2s linear
+			&:hover
+				color: colorSiteBackground
+
+		.content-row:hover .button
+			opacity: 1

@@ -42,6 +42,32 @@ aside '.app.page-active.mainbar-active', ->
 
 		div '.body', ->
 
+			div '.content-table', ->
+				div '.content-row.content-row-header', ->
+					div '.content-cell.content-title', ->
+						'Title'
+					div '.content-cell.content-buttons', ->
+						''
+					div '.content-cell.content-tags', ->
+						'Tags'
+					div '.content-cell.content-date', ->
+						'Date'
+				for file in @getCollection('database').toJSON()
+					div '.content-row', ->
+						div '.content-cell.content-title', ->
+							file.name
+						div '.content-cell.content-buttons', ->
+							span '.button.button-edit', ->
+								span '.icon.icon-edit', ->
+								text 'Edit'
+							span '.button.button-delete', ->
+								span '.icon.icon-trash', ->
+								text 'Delete'
+						div '.content-cell.content-tags', ->
+							file.tags?.join(', ')
+						div '.content-cell.content-date', ->
+							file.date.toLocaleDateString()
+
 			div '.field.field-title', ->
 				label ->
 					'Title'
