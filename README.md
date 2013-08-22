@@ -9,8 +9,6 @@
 Adds an inline GUI/CMS to DocPad
 
 
-## Preview
-
 ### Edit Page
 
 ![Edit Page Preview](https://raw.github.com/docpad/docpad-plugin-inlinegui/master/resources/images/edit-page.jpg)
@@ -50,3 +48,9 @@ NOTE THIS IS STILL EVERY EXPIREMENTAL. PROBABLY NOTHING HERE IS RIGHT OR WORKS!
 ## License
 Licensed under the incredibly [permissive](http://en.wikipedia.org/wiki/Permissive_free_software_licence) [MIT License](http://creativecommons.org/licenses/MIT/)
 <br/>Copyright &copy; 2013+ [Myplanet Internet Solutions Ltd.](http://www.myplanetdigital.com/) <hello@myplanetdigital.com>
+
+## Contributors
+
+- [Neil Taylor](https://github.com/neilbaylorrulez) gruntwork
+- [Lisa Hong](https://github.com/lisaej) design
+- [Benjamin Lupton](http://balupton.com) implementation
