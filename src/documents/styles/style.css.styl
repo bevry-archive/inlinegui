@@ -236,11 +236,13 @@ body
 		font-size:   (heightNavbar / 12 * 4.5)
 		padding: 0 (heightNavbar / 12 * 3)
 		margin: 0
-		background: rgba(0,0,0, 0.1)
-		border-left: 1px solid rgba(0,0,0, 0.2)
+
 		.icon
 			display: inline-block
 			transition: all 0.2s ease-out
+
+		&.active
+			background: rgba(0,0,0, 0.1)
 
 .mainbar
 	width: 100%
