@@ -30,16 +30,20 @@ aside '.app', ->
 				span '.inactive-text', ->
 					'Cancel'
 
-			span '.button.button-meta', ->
-				span '.icon.icon-info', ->
-
 			span '.button.button-source', ->
 				span '.icon.icon-code', ->
+
+			span '.button.button-meta', ->
+				span '.icon.icon-info', ->
 				#span '.icon.icon-reorder', ->
 				#span '.icon.icon-info-sign', ->
 				#span '.icon.icon-cog', ->
 				#span '.icon.icon-code', ->
 				#span '.icon.icon-list', ->
+
+			span '.button.button-preview', ->
+				span '.icon.icon-globe', ->
+				#span '.icon.icon-eye-open', ->
 
 	section '.mainbar.show-site', ->
 		header ->
