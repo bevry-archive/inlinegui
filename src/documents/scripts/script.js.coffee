@@ -114,8 +114,11 @@ class App extends Spine.Controller
 		@
 
 	onWindowResize: =>
+		# Prepare
+		{$sitebar} = @
+
 		# Apply
-		@$sitebar.css(
+		$sitebar.css(
 			'min-height': @$window.height() - @$navbar.outerHeight()
 		)
 
