@@ -45,7 +45,7 @@ aside '.app', ->
 				span '.icon.icon-globe', ->
 				#span '.icon.icon-eye-open', ->
 
-	section '.mainbar.show-site', ->
+	section '.sitebar.mainbar.show-site', ->
 		header ->
 			span '.title', ->
 				'Database Listing'
@@ -76,27 +76,34 @@ aside '.app', ->
 					div '.content-cell.content-date', ->
 						'File date'
 
-	section '.mainbar.show-page', ->
-		header ->
-			span '.title', ->
+	section '.editbar.show-page', ->
+		section '.sourcebar.mainbar', ->
+			header '.title', ->
+				'Page Source'
+
+			div '.body', ->
+				textarea '.file-source', ->
+
+		section '.metabar.mainbar', ->
+			header '.title', ->
 				'Page Settings'
 
-		div '.body', ->
+			div '.body', ->
 
-			div '.field.field-title', ->
-				label ->
-					'Title'
-				input type:'text', ->
+				div '.field.field-title', ->
+					label ->
+						'Title'
+					input type:'text', ->
 
-			div '.field.field-date', ->
-				label ->
-					'Publish Date'
-				input type:'date', ->
+				div '.field.field-date', ->
+					label ->
+						'Publish Date'
+					input type:'date', ->
 
-			div '.field.field-author', ->
-				label ->
-					'Author'
-				select ->
-					option -> 'Benjamin Lupton'
+				div '.field.field-author', ->
+					label ->
+						'Author'
+					select ->
+						option -> 'Benjamin Lupton'
 
-	iframe '.sitebar.show-page', src:'/site.html', ->
+		iframe '.previewbar', src:'/site.html', ->

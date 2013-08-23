@@ -30,6 +30,31 @@ class File extends Spine.Model
 
 		return result
 
+class FileEditItem extends Spine.Controller
+	el: $('.editbar').remove().first().prop('outerHTML')
+
+	elements:
+		'.field-title  :input': '$title'
+		'.field-date   :input': '$date'
+		'.field-author :input': '$author'
+		'.file-source': '$source'
+		'.previewbar': '$iframe'
+
+	render: =>
+		# Prepare
+		{item, $el, $title, $date, $author, $iframe, $source} = @
+		{meta, filename, date, urls} = item
+
+		# Apply
+		$title.val  meta?.title or filename or ''
+		$date.val   date?.toISOString()
+		$source.val ''
+		$iframe.attr('src': document.location.origin+'/'+urls[0])
+		# @todo figure out why file.url doesn't work
+
+		# Chain
+		@
+
 class FileListItem extends Spine.Controller
 	el: $('.content-row-file').remove().first().prop('outerHTML')
 
@@ -40,10 +65,11 @@ class FileListItem extends Spine.Controller
 
 	render: =>
 		# Prepare
-		{meta, filename, date} = @item
-		{$el, $title, $tags, $date} = @
+		{item, $el, $title, $tags, $date} = @
+		{id, meta, filename, date} = item
 
 		# Apply
+		$el.data('file', item)
 		$title.text meta?.title or filename or ''
 		$tags.text  meta?.tags?.join(', ') or ''
 		$date.text  date?.toLocaleDateString() or ''
@@ -52,6 +78,8 @@ class FileListItem extends Spine.Controller
 		@
 
 class App extends Spine.Controller
+	editView: null
+
 	elements:
 		'window': '$window'
 		'.loadbar': '$loadbar'
@@ -81,6 +109,7 @@ class App extends Spine.Controller
 		File.bind('create', @addFile)
 		File.bind('refresh change', @addFiles)
 		File.fetch()
+		# @todo figure out how to release/destroy files
 
 		# Apply
 		@siteMode()
@@ -137,16 +166,17 @@ class App extends Spine.Controller
 		e.preventDefault()
 		e.stopPropagation()
 
+		# Clean
+		if @editView?
+			@editView.release()
+			@editView = null
+
 		# Prepare
 		{$el, $toggleMeta, $links, $linkPage, $toggles, $togglePreview} = @
 		$target = $(e.currentTarget)
 		$row = $target.parents('.content-row:first')
-
-		# Fetch the page title
-		if $row.length
-			title = $row.find('.content-title:first').text()
-		else
-			title = 'Page'
+		file = $row.data('file')
+		title = file.meta.title or file.filename
 
 		# Apply
 		$el
@@ -165,12 +195,21 @@ class App extends Spine.Controller
 			$toggleMeta
 				.addClass('active')
 
+		# View
+		@editView = new FileEditItem({item:file})
+		$el.append(@editView.render().el)
+
 		# Chain
 		@
 
 	siteMode: =>
 		# Prepare
 		{$el, $linkSite} = @
+
+		# Clean
+		if @editView?
+			@editView.release()
+			@editView = null
 
 		# Apply
 		$el
