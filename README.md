@@ -11,30 +11,30 @@ Adds an inline GUI/CMS to DocPad
 
 ### Edit Page
 
-![Edit Page Preview](https://raw.github.com/docpad/docpad-plugin-inlinegui/master/resources/images/edit-page.jpg)
+![Edit Page Preview](https://raw.github.com/docpad/docpad-plugin-inlinegui/master/src/files/resources/images/edit-page.jpg)
 
 
 ### Edit Site
 
-![Edit Site Preview](https://raw.github.com/docpad/docpad-plugin-inlinegui/master/resources/images/edit-site.jpg)
+![Edit Site Preview](https://raw.github.com/docpad/docpad-plugin-inlinegui/master/src/files/resources/images/edit-site.jpg)
 
 ### File Manager
 
-![File Manager Preview](https://raw.github.com/docpad/docpad-plugin-inlinegui/master/resources/images/file-manager.jpg)
+![File Manager Preview](https://raw.github.com/docpad/docpad-plugin-inlinegui/master/src/files/resources/images/file-manager.jpg)
 
 
 
-## Install
-
-```
-docpad install inlinegui
-```
-
-
-## Usage
+## Development
 
 NOTE THIS IS STILL EVERY EXPIREMENTAL. PROBABLY NOTHING HERE IS RIGHT OR WORKS!
 
+```
+git clone https://github.com/docpad/docpad-plugin-inlinegui.git inlinegui
+cd inlinegui
+git checkout spine
+npm install
+docpad run
+```
 
 
 ## History
