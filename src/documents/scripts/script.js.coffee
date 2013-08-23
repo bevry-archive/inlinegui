@@ -1,5 +1,56 @@
 wait = (delay,fn) -> setTimeout(fn,delay)
 
+class File extends Spine.Model
+	@configure('File',
+		'meta'
+		'id'
+		'filename'
+		'relativePath'
+		'date'
+		'extension'
+		'contentType'
+		'encoding'
+		'content'
+		'contentRendered'
+		'url'
+		'urls'
+	)
+
+	@extend Spine.Model.Ajax
+
+	@url: '/restapi/documents/'
+
+	@fromJSON: (response) ->
+		return  unless response
+
+		if Spine.isArray(response.data)
+			result = (new @(item)  for item in response.data)
+		else
+			result = new @(response.data)
+
+		return result
+
+class FileListItem extends Spine.Controller
+	el: $('.content-row-file').remove().first().prop('outerHTML')
+
+	elements:
+		'.content-title': '$title'
+		'.content-tags': '$tags'
+		'.content-date': '$date'
+
+	render: =>
+		# Prepare
+		{meta, filename, date} = @item
+		{$el, $title, $tags, $date} = @
+
+		# Apply
+		$title.text meta?.title or filename or ''
+		$tags.text  meta?.tags?.join(', ') or ''
+		$date.text  date?.toLocaleDateString() or ''
+
+		# Chain
+		@
+
 class App extends Spine.Controller
 	elements:
 		'window': '$window'
@@ -12,6 +63,8 @@ class App extends Spine.Controller
 		'.link-page': '$linkPage'
 		'.toggle-preview': '$togglePreview'
 		'.toggle-meta': '$toggleMeta'
+		'.content-table': '$filesList'
+		'.content-row-file': '$files'
 
 	events:
 		'resize window': 'onWindowResize'
@@ -24,12 +77,29 @@ class App extends Spine.Controller
 		# Super
 		super
 
+		# Fetch
+		File.bind('create', @addFile)
+		File.bind('refresh change', @addFiles)
+		File.fetch()
+
 		# Apply
 		@siteMode()
 		@onWindowResize()
 		@$el.addClass('app-ready')
 
 		# Chain
+		@
+
+	addFile: (item) =>
+		{$filesList} = @
+		view = new FileListItem({item})
+		$filesList.append(view.render().el)
+		@
+
+	addFiles: =>
+		{$files} = @
+		$files.remove()
+		@addFile(file)  for file in File.all()
 		@
 
 	clickButton: (e) =>

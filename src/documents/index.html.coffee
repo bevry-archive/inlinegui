@@ -60,22 +60,21 @@ aside '.app', ->
 						'Tags'
 					div '.content-cell.content-date', ->
 						'Date'
-				for file in @getCollection('database').toJSON()
-					div '.content-row', ->
-						div '.content-cell.content-name', ->
-							span '.content-title', title:'Open file', ->
-								file.name
-							span '.content-buttons', ->
-								span '.button.button-edit', title:'Edit file', ->
-									span '.icon.icon-edit', ->
-									text 'Edit'
-								span '.button.button-delete', title:'Delete file', ->
-									span '.icon.icon-trash', ->
-									text 'Delete'
-						div '.content-cell.content-tags', ->
-							file.tags?.join(', ')
-						div '.content-cell.content-date', ->
-							file.date.toLocaleDateString()
+				div '.content-row.content-row-file', ->
+					div '.content-cell.content-name', ->
+						span '.content-title', title:'Open file', ->
+							'File title'
+						span '.content-buttons', ->
+							span '.button.button-edit', title:'Edit file', ->
+								span '.icon.icon-edit', ->
+								text 'Edit'
+							span '.button.button-delete', title:'Delete file', ->
+								span '.icon.icon-trash', ->
+								text 'Delete'
+					div '.content-cell.content-tags', ->
+						'File tags'
+					div '.content-cell.content-date', ->
+						'File date'
 
 	section '.mainbar.show-page', ->
 		header ->

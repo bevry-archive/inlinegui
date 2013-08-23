@@ -46,6 +46,7 @@ docpadConfig = {
 				'/vendor/modernizr.js'
 				'/vendor/jquery.js'
 				'/vendor/spine/spine.js'
+				'/vendor/spine/ajax.js'
 				'/vendor/spine/local.js'
 				'/vendor/spine/list.js'
 				'/vendor/spine/manager.js'
