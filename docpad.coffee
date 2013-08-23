@@ -44,6 +44,13 @@ docpadConfig = {
 			scripts: [
 				'/vendor/log.js'
 				'/vendor/modernizr.js'
+				'/vendor/jquery.js'
+				'/vendor/spine/spine.js'
+				'/vendor/spine/local.js'
+				'/vendor/spine/list.js'
+				'/vendor/spine/manager.js'
+				'/vendor/spine/relation.js'
+				'/vendor/spine/route.js'
 				'/scripts/script.js'
 			]
 

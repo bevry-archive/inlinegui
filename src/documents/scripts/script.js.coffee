@@ -1,48 +1,54 @@
 wait = (delay,fn) -> setTimeout(fn,delay)
 
-class App
+class App extends Spine.Controller
+	elements:
+		'.loadbar': '$loadbar'
+		'.sitebar': '$sitebar'
+		'.link-site': '$linkSite'
+		'.toggle-meta': '$toggleMeta'
+
+	events:
+		'click .link-site': 'siteMode'
+		'click .button-edit, .content-name': 'pageMode'
+		'click .toggle': 'clickToggle'
+		'click .button': 'clickButton'
+
 	constructor: ->
-		$(@domReady)
+		super
 
-	domReady: =>
-		$('.link-site').click(@siteMode)
-		$('.button-edit, .content-name').click(@pageMode)
+		{$el} = @
 
-		$('.toggle').click ->
-			$this = $(this)
-			$this.toggleClass('active')
-
-		$('.navbar .button').click ->
-			$this = $(this)
-			$loadbar = $('.loadbar')
-
-			if $loadbar.hasClass('active') is false or $loadbar.data('for') is this
-				$this.siblings('.button').toggleClass('disabled')
-				$this.toggleClass('active')
-				$loadbar
-					.toggleClass('active')
-					.toggleClass($this.data('loadclassname'))
-					.data('for', this)
-
-		$('.navbar .button-toggle').click ->
-			$this = $(this)
-			$this.toggleClass('active')
-			$('.mainbar').toggleClass('active')
-
-		$('.sitebar').css(
+		@$sitebar.css(
 			'min-height': $(window).height() - $('.navbar').outerHeight()
 		)
 
 		@siteMode()
 
-		wait 3, ->
-			$('.app').addClass('app-ready')
+		$el.addClass('app-ready')
+
+	clickButton: (e) =>
+		target = e.currentTarget
+		$target = $(e.currentTarget)
+		{$loadbar} = @
+
+		if $loadbar.hasClass('active') is false or $loadbar.data('for') is target
+			$target.siblings('.button').toggleClass('disabled')
+			$target.toggleClass('active')
+			$loadbar
+				.toggleClass('active')
+				.toggleClass($target.data('loadclassname'))
+				.data('for', target)
+
+	clickToggle: (e) ->
+		$target = $(e.currentTarget)
+		$target.toggleClass('active')
 
 	pageMode: (e) =>
+		{$el, $toggleMeta} = @
 		e.preventDefault()
 		e.stopPropagation()
 
-		$target = $(e.target)
+		$target = $(e.currentTarget)
 		$row = $target.parents('.content-row:first')
 
 		if $row.length
@@ -50,7 +56,7 @@ class App
 		else
 			title = 'Page'
 
-		$('.app')
+		$el
 			.removeClass('app-site')
 			.addClass('app-page')
 			.find('.navbar')
@@ -69,19 +75,22 @@ class App
 					.end()
 
 		if $target.hasClass('button-edit')
-			$('.toggle-meta').addClass('active')
+			$toggleMeta.addClass('active')
 
 	siteMode: =>
-		$('.app')
+		{$el, $linkSite} = @
+		$el
 			.removeClass('app-page')
 			.addClass('app-site')
-		$('.link-site')
+		$linkSite
 			.addClass('active')
 			.siblings().removeClass('active')
 
 	resize: (size) =>
-		$('.sitebar').height(size)
+		{$sitebar} = @
+		$sitebar.height(size)
 
-app = new App()
-
+window.app = app = new App(
+	el: $('.app')
+)
 window.resizeIframe = app.resize.bind(app)
