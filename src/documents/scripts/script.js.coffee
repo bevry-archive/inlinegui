@@ -49,7 +49,7 @@ class FileEditItem extends Spine.Controller
 		$title.val  meta?.title or filename or ''
 		$date.val   date?.toISOString()
 		$source.val ''
-		$iframe.attr('src': document.location.origin+'/'+urls[0])
+		$iframe.attr('src': 'http://localhost:9778/'+urls[0])
 		# @todo figure out why file.url doesn't work
 
 		# Chain
