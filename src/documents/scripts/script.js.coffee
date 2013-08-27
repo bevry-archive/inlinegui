@@ -83,7 +83,7 @@ class App extends Spine.Controller
 	elements:
 		'window': '$window'
 		'.loadbar': '$loadbar'
-		'.sitebar': '$sitebar'
+		'.previewbar': '$previewbar'
 		'.navbar': '$navbar'
 		'.navbar .link': '$links'
 		'.navbar .toggle': '$toggles'
@@ -224,10 +224,10 @@ class App extends Spine.Controller
 
 	onWindowResize: =>
 		# Prepare
-		{$sitebar} = @
+		{$previewbar} = @
 
 		# Apply
-		$sitebar.css(
+		$previewbar.css(
 			'min-height': @$window.height() - @$navbar.outerHeight()
 		)
 
@@ -236,10 +236,10 @@ class App extends Spine.Controller
 
 	onIframeResize: (size) =>
 		# Prepare
-		{$sitebar} = @
+		{$previewbar} = @
 
 		# Apply
-		$sitebar.height(size)
+		$previewbar.height(size)
 
 		# Chain
 		@

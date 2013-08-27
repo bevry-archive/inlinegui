@@ -106,4 +106,4 @@ aside '.app', ->
 					select ->
 						option -> 'Benjamin Lupton'
 
-		iframe '.previewbar', src:'/site.html', ->
+		iframe '.previewbar', ->
