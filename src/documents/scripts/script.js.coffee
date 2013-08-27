@@ -1,4 +1,4 @@
-wait = (delay,fn) -> setTimeout(fn,delay)
+zwait = (delay,fn) -> setTimeout(fn,delay)
 
 class File extends Spine.Model
 	@configure('File',
@@ -18,7 +18,7 @@ class File extends Spine.Model
 
 	@extend Spine.Model.Ajax
 
-	@url: '/restapi/documents/'
+	@url: 'http://localhost:9778/restapi/documents/'
 
 	@fromJSON: (response) ->
 		return  unless response
@@ -83,7 +83,6 @@ class App extends Spine.Controller
 	elements:
 		'window': '$window'
 		'.loadbar': '$loadbar'
-		'.previewbar': '$previewbar'
 		'.navbar': '$navbar'
 		'.navbar .link': '$links'
 		'.navbar .toggle': '$toggles'
@@ -224,7 +223,7 @@ class App extends Spine.Controller
 
 	onWindowResize: =>
 		# Prepare
-		{$previewbar} = @
+		$previewbar = this.$el.find('.previewbar')
 
 		# Apply
 		$previewbar.css(
@@ -236,10 +235,10 @@ class App extends Spine.Controller
 
 	onIframeResize: (size) =>
 		# Prepare
-		{$previewbar} = @
+		$previewbar = this.$el.find('.previewbar')
 
 		# Apply
-		$previewbar.height(size)
+		$previewbar.height(String(size)+'px')
 
 		# Chain
 		@

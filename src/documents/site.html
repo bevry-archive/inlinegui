@@ -3,6 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Document</title>
+	<link href="/styles/inline.css" rel="stylesheet" />
 </head>
 <body>
 	<p>a</p>
@@ -68,12 +69,6 @@
 	<p>a</p>
 	<p>a</p>
 	<p>a</p>
-	<script>
-		setInterval(function(){
-			if ( typeof parent.resizeIframe === 'function' ) {
-				parent.resizeIframe(document.body.scrollHeight);
-			}
-		}, 100);
-	</script>
+	<script src="/scripts/inline.js" async></script>
 </body>
 </html>

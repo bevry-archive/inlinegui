@@ -6,6 +6,12 @@ title: 'Inline GUI'
 aside '.app', ->
 	aside '.loadbar', ->
 
+	section '.loginbar', ->
+
+		section '.token', ->
+
+		section '.user', ->
+
 	nav '.navbar', ->
 		span '.left', ->
 			span '.link.link-site', ->
