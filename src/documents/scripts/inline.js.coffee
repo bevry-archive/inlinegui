@@ -1,5 +1,8 @@
 # This script is injected into the iframe
 if parent isnt self
+	# Add the activated class
+	document.body.className += ' inlinegui-actived'
+
 	# Resize ourselves in the parent
 	setInterval(
 		->
