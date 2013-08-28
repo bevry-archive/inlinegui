@@ -1,34 +1,38 @@
-zwait = (delay,fn) -> setTimeout(fn,delay)
+wait = (delay,fn) -> setTimeout(fn,delay)
+siteUrl = "http://localhost:9778"
 
 class File extends Spine.Model
 	@configure('File',
 		'meta'
-		'id'
-		'filename'
-		'relativePath'
-		'date'
-		'extension'
-		'contentType'
-		'encoding'
-		'content'
-		'contentRendered'
-		'url'
-		'urls'
+		'attrs'
 	)
 
 	@extend Spine.Model.Ajax
 
-	@url: 'http://localhost:9778/restapi/documents/'
+	@url: "#{siteUrl}/restapi/documents/?additionalFields=source"
 
 	@fromJSON: (response) ->
 		return  unless response
 
+		adjust = (data) ->
+			meta = data.meta
+			delete data.meta
+			attrs = data
+			result = {meta, attrs}
+			return result
+
 		if Spine.isArray(response.data)
-			result = (new @(item)  for item in response.data)
+			result =
+				for data in response.data
+					new @(adjust data)
 		else
-			result = new @(response.data)
+			result = new @(adjust response.data)
 
 		return result
+
+	get: (key) ->
+		value = @meta[key] ? @attrs[key] ? null
+		return value
 
 class FileEditItem extends Spine.Controller
 	el: $('.editbar').remove().first().prop('outerHTML')
@@ -43,17 +47,32 @@ class FileEditItem extends Spine.Controller
 	render: =>
 		# Prepare
 		{item, $el, $title, $date, $author, $iframe, $source} = @
-		{meta, filename, date, urls} = item
 
 		# Apply
-		$title.val  meta?.title or filename or ''
-		$date.val   date?.toISOString()
-		$source.val ''
-		$iframe.attr('src': 'http://localhost:9778/'+urls[0])
+		$title.val  item.get('title') or item.get('filename') or ''
+		$date.val   item.get('date')?.toISOString()
+		$source.val item.get('source')
+		$iframe.attr('src': siteUrl+item.get('url'))
 		# @todo figure out why file.url doesn't work
 
 		# Chain
 		@
+
+	appendTo: =>
+		# Super
+		super
+
+		# Prepare
+		{item, $source} = @
+
+		# Editor
+		@editor = CodeMirror.fromTextArea($source.get(0), {
+			mode: item.get('contentType')
+		})
+
+		# Chain
+		return @
+
 
 class FileListItem extends Spine.Controller
 	el: $('.content-row-file').remove().first().prop('outerHTML')
@@ -66,14 +85,13 @@ class FileListItem extends Spine.Controller
 	render: =>
 		# Prepare
 		{item, $el, $title, $tags, $date} = @
-		{id, meta, filename, date} = item
 
 		# Apply
 		$el.data('file', item)
-		$title.text meta?.title or filename or ''
-		$tags.text  meta?.tags?.join(', ') or ''
-		$date.text  date?.toLocaleDateString() or ''
-
+		$title.text  item.get('title') or item.get('filename') or ''
+		$tags.text  (item.get('tags') or []).join(', ') or ''
+		$date.text  item.get('date')?.toLocaleDateString() or ''
+		console.log item
 		# Chain
 		@
 
@@ -81,7 +99,6 @@ class App extends Spine.Controller
 	editView: null
 
 	elements:
-		'window': '$window'
 		'.loadbar': '$loadbar'
 		'.navbar': '$navbar'
 		'.navbar .link': '$links'
@@ -94,7 +111,6 @@ class App extends Spine.Controller
 		'.content-row-file': '$files'
 
 	events:
-		'resize window': 'onWindowResize'
 		'click .link-site': 'siteMode'
 		'click .button-edit, .content-name': 'pageMode'
 		'click .navbar .toggle': 'clickToggle'
@@ -121,7 +137,8 @@ class App extends Spine.Controller
 	addFile: (item) =>
 		{$filesList} = @
 		view = new FileListItem({item})
-		$filesList.append(view.render().el)
+			.render()
+			.appendTo($filesList)
 		@
 
 	addFiles: =>
@@ -196,7 +213,9 @@ class App extends Spine.Controller
 
 		# View
 		@editView = new FileEditItem({item:file})
-		$el.append(@editView.render().el)
+			.render()
+			.appendTo($el)
+		@onWindowResize()
 
 		# Chain
 		@
@@ -223,22 +242,33 @@ class App extends Spine.Controller
 
 	onWindowResize: =>
 		# Prepare
+		$window = $(window)
 		$previewbar = this.$el.find('.previewbar')
 
 		# Apply
 		$previewbar.css(
-			'min-height': @$window.height() - @$navbar.outerHeight()
+			minHeight: $window.height() - (this.$el.outerHeight() - $previewbar.height())
 		)
 
 		# Chain
 		@
 
-	onIframeResize: (size) =>
-		# Prepare
-		$previewbar = this.$el.find('.previewbar')
+	onChildMessage: (event) =>
+		# Extract
+		data = event.originalEvent?.data or event.data or {}
+		{action} = data
 
-		# Apply
-		$previewbar.height(String(size)+'px')
+		# Handle
+		switch action
+			when 'resizeChild'
+				# Prepare
+				$previewbar = this.$el.find('.previewbar')
+
+				# Apply
+				$previewbar.height(String(data.height)+'px')
+
+			else
+				console.log('Unknown message from child:', data)
 
 		# Chain
 		@
@@ -246,4 +276,6 @@ class App extends Spine.Controller
 window.app = app = new App(
 	el: $('.app')
 )
-window.resizeIframe = app.onIframeResize.bind(app)
+$(window)
+	.on('resize', app.onWindowResize.bind(app))
+	.on('message', app.onChildMessage.bind(app))

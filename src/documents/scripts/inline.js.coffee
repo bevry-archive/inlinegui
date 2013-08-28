@@ -2,6 +2,10 @@
 if parent?
 	document.body.style.background = 'green'
 	setInterval(
-		-> parent?.resizeIframe?(document.body.scrollHeight)
+		->
+			parent?.postMessage?({
+				action: 'resizeChild',
+				height: document.body.scrollHeight
+			}, '*')
 		100
 	)

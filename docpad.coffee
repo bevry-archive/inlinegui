@@ -37,6 +37,9 @@ docpadConfig = {
 			styles: [
 				'/vendor/normalize.css'
 				'/vendor/h5bp.css'
+
+				'/vendor/codemirror/codemirror.css'
+
 				'/styles/style.css'
 			]
 
@@ -45,6 +48,7 @@ docpadConfig = {
 				'/vendor/log.js'
 				'/vendor/modernizr.js'
 				'/vendor/jquery.js'
+
 				'/vendor/spine/spine.js'
 				'/vendor/spine/ajax.js'
 				'/vendor/spine/local.js'
@@ -52,6 +56,9 @@ docpadConfig = {
 				'/vendor/spine/manager.js'
 				'/vendor/spine/relation.js'
 				'/vendor/spine/route.js'
+
+				'/vendor/codemirror/codemirror.js'
+
 				'/scripts/script.js'
 			]
 
