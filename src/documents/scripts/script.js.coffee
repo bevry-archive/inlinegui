@@ -112,7 +112,7 @@ class App extends Spine.Controller
 
 	routes:
 		'/:collectionName/': 'routeCollection'
-		'/:collectionName/:relativePath': 'routeFile'
+		'/:collectionName/*relativePath': 'routeFile'
 
 	clickLogin: (e) ->
 		navigator.id.request()
