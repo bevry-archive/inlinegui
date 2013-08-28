@@ -21,14 +21,10 @@ aside '.app', ->
 				div '.content-row.content-row-header', ->
 					div '.content-cell.content-cell-name', ->
 						'Location'
-				div '.content-row', ->
+				div '.content-row.content-row-site', ->
 					div '.content-cell.content-cell-name', ->
 						span '.content-name', title:'Open site', ->
 							'http://localhost:9778'
-				div '.content-row', ->
-					div '.content-cell.content-cell-name', ->
-						span '.content-name', title:'Open site', ->
-							'http://docpad.org'
 
 	nav '.navbar', ->
 		span '.left', ->
@@ -84,7 +80,7 @@ aside '.app', ->
 						'Tags'
 					div '.content-cell.content-cell-date', ->
 						'Date'
-				div '.content-row', ->
+				div '.content-row.content-row-file', ->
 					div '.content-cell.content-cell-name', ->
 						span '.content-name', title:'Open file', ->
 							'File title'

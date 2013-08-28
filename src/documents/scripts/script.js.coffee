@@ -105,7 +105,7 @@ class App extends Spine.Controller
 
 	events:
 		'click .link-site': 'clickSite'
-		'click .button-edit, .content-name': 'clickFile'
+		'click .content-cell-name': 'clickFile'
 		'click .navbar .toggle': 'clickToggle'
 		'click .navbar .button': 'clickButton'
 		'click .button-login': 'clickLogin'
