@@ -72,8 +72,8 @@ class FileListItem extends Spine.Controller
 
 	elements:
 		'.content-name': '$title'
-		'.content-tags': '$tags'
-		'.content-date': '$date'
+		'.content-cell-tags': '$tags'
+		'.content-cell-date': '$date'
 
 	render: =>
 		# Prepare
@@ -160,7 +160,7 @@ class App extends Spine.Controller
 			onlogin: (args...) ->
 				# ignore as we listen to post message
 			onlogout: ->
-				localStorage.setItem('currentUser', null)
+				localStorage.setItem('currentUser', '')
 		)
 		@loginUser(currentUser)  if currentUser
 
