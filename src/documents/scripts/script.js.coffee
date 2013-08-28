@@ -1,5 +1,6 @@
 wait = (delay,fn) -> setTimeout(fn,delay)
 siteUrl = "http://localhost:9778"
+Spine.Model.host = siteUrl
 
 class File extends Spine.Model
 	@configure('File',
@@ -103,10 +104,32 @@ class App extends Spine.Controller
 		'.content-row-file': '$files'
 
 	events:
-		'click .link-site': 'siteMode'
-		'click .button-edit, .content-name': 'pageMode'
+		'click .link-site': 'clickSite'
+		'click .button-edit, .content-name': 'clickFile'
 		'click .navbar .toggle': 'clickToggle'
 		'click .navbar .button': 'clickButton'
+
+	routes:
+		'/:collectionName/': 'routeCollection'
+		'/:collectionName/:relativePath': 'routeFile'
+
+	routeCollection: (opts) ->
+		{collectionName} = opts
+
+		@openCollection(collectionName)
+
+	routeFile: (opts) ->
+		{collectionName, relativePath} = opts
+
+		files = File.all().filter (file) ->
+			return file.get('relativePath') is relativePath
+
+		if files.length is 1
+			@openFile(files[0])
+		else
+			console.log('error')
+
+		@
 
 	constructor: ->
 		# Super
@@ -119,9 +142,17 @@ class App extends Spine.Controller
 		# @todo figure out how to release/destroy files
 
 		# Apply
-		@siteMode()
+		@openCollection('database')
 		@onWindowResize()
-		@$el.addClass('app-ready')
+
+		# Setup routes
+		for key,value of @routes
+			@route(key, @[value])
+
+		# Once loaded init routes and set us as ready
+		Spine.Ajax.queue (args...) =>
+			Spine.Route.setup()
+			@$el.addClass('app-ready')
 
 		# Chain
 		@
@@ -159,7 +190,7 @@ class App extends Spine.Controller
 		# Chain
 		@
 
-	clickToggle: (e) ->
+	clickToggle: (e) =>
 		# Prepare
 		$target = $(e.currentTarget)
 
@@ -179,11 +210,23 @@ class App extends Spine.Controller
 		# Chain
 		@
 
-	pageMode: (e) =>
+	clickFile: (e) =>
 		# Disable click through
 		e.preventDefault()
 		e.stopPropagation()
 
+		# Prepare
+		$target = $(e.currentTarget)
+		$row = $target.parents('.content-row:first')
+		file = $row.data('file')
+
+		# Navigate
+		@navigate('/database/'+file.get('relativePath'))
+
+		# Chain
+		@
+
+	openFile: (file) =>
 		# Clean
 		if @editView?
 			@editView.release()
@@ -191,54 +234,52 @@ class App extends Spine.Controller
 
 		# Prepare
 		{$el, $toggleMeta, $links, $linkPage, $toggles, $togglePreview} = @
-		$target = $(e.currentTarget)
-		$row = $target.parents('.content-row:first')
-		file = $row.data('file')
 		title = file.get('title') or file.get('filename')
 
 		# View
 		@editView = editView = new FileEditItem({item:file})
-			.render()
+		editView.render()
 
 		# Apply
-		$el
-			.removeClass('app-site')
-			.addClass('app-page')
-		$links
-			.removeClass('active')
-		$linkPage
-			.text(title)
-			.addClass('active')
-		$toggles
-			.removeClass('active')
-		$togglePreview
-			.addClass('active')
+		$el.removeClass('app-site').addClass('app-page')
+		$links.removeClass('active')
+		$linkPage.text(title).addClass('active')
+		$toggles.removeClass('active')
 
-
-		editView.$sourcebar.hide()
+		$togglePreview.addClass('active')
 		editView.$previewbar.show()
+
+		# Bars
+		editView.$sourcebar.hide()
+		###
 		if $target.hasClass('button-edit')
 			$toggleMeta
 				.addClass('active')
 			editView.$metabar.show()
 		else
 			editView.$metabar.hide()
+		###
 
 		# View
 		editView.appendTo($el)
 		@onWindowResize()
 
+	clickSite: =>
+		# Navigate
+		@navigate('/database/')
+
 		# Chain
 		@
 
-	siteMode: =>
-		# Prepare
-		{$el, $linkSite} = @
-
+	openCollection: (collectionName) ->
 		# Clean
 		if @editView?
 			@editView.release()
 			@editView = null
+
+		# Prepare
+		collectionName ?= 'database'
+		{$el, $linkSite} = @
 
 		# Apply
 		$el
