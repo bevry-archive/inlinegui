@@ -42,28 +42,20 @@ class FileEditItem extends Spine.Controller
 		'.field-date   :input': '$date'
 		'.field-author :input': '$author'
 		'.file-source': '$source'
-		'.previewbar': '$iframe'
+		'.previewbar': '$previewbar'
+		'.sourcebar': '$sourcebar'
+		'.metabar': '$metabar'
 
 	render: =>
 		# Prepare
-		{item, $el, $title, $date, $author, $iframe, $source} = @
+		{item, $el, $title, $date, $author, $previewbar, $source} = @
 
 		# Apply
 		$title.val  item.get('title') or item.get('filename') or ''
 		$date.val   item.get('date')?.toISOString()
 		$source.val item.get('source')
-		$iframe.attr('src': siteUrl+item.get('url'))
+		$previewbar.attr('src': siteUrl+item.get('url'))
 		# @todo figure out why file.url doesn't work
-
-		# Chain
-		@
-
-	appendTo: =>
-		# Super
-		super
-
-		# Prepare
-		{item, $source} = @
 
 		# Editor
 		@editor = CodeMirror.fromTextArea($source.get(0), {
@@ -71,7 +63,7 @@ class FileEditItem extends Spine.Controller
 		})
 
 		# Chain
-		return @
+		@
 
 
 class FileListItem extends Spine.Controller
@@ -174,6 +166,16 @@ class App extends Spine.Controller
 		# Apply
 		$target.toggleClass('active')
 
+		# Handle
+		toggle = $target.hasClass('active')
+		switch true
+			when $target.hasClass('toggle-meta')
+				@editView.$metabar.toggle(toggle)
+			when $target.hasClass('toggle-preview')
+				@editView.$previewbar.toggle(toggle)
+			when $target.hasClass('toggle-source')
+				@editView.$sourcebar.toggle(toggle)
+
 		# Chain
 		@
 
@@ -194,6 +196,10 @@ class App extends Spine.Controller
 		file = $row.data('file')
 		title = file.meta.title or file.filename
 
+		# View
+		@editView = editView = new FileEditItem({item:file})
+			.render()
+
 		# Apply
 		$el
 			.removeClass('app-site')
@@ -207,14 +213,19 @@ class App extends Spine.Controller
 			.removeClass('active')
 		$togglePreview
 			.addClass('active')
+
+
+		editView.$sourcebar.hide()
+		editView.$previewbar.show()
 		if $target.hasClass('button-edit')
 			$toggleMeta
 				.addClass('active')
+			editView.$metabar.show()
+		else
+			editView.$metabar.hide()
 
 		# View
-		@editView = new FileEditItem({item:file})
-			.render()
-			.appendTo($el)
+		editView.appendTo($el)
 		@onWindowResize()
 
 		# Chain
