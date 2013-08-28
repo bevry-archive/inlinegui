@@ -68,10 +68,10 @@ class FileEditItem extends Spine.Controller
 
 
 class FileListItem extends Spine.Controller
-	el: $('.content-row-file').remove().first().prop('outerHTML')
+	el: $('.content-table.files .content-row:last').remove().first().prop('outerHTML')
 
 	elements:
-		'.content-title': '$title'
+		'.content-name': '$title'
 		'.content-tags': '$tags'
 		'.content-date': '$date'
 
@@ -100,7 +100,7 @@ class App extends Spine.Controller
 		'.link-page': '$linkPage'
 		'.toggle-preview': '$togglePreview'
 		'.toggle-meta': '$toggleMeta'
-		'.content-table': '$filesList'
+		'.content-table.files': '$filesList'
 		'.content-row-file': '$files'
 
 	events:

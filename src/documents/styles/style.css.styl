@@ -116,6 +116,8 @@ body
 		.show-site
 			display: none
 
+.sitesbar
+
 .editbar
 	margin-bottom: -5px
 
@@ -323,29 +325,37 @@ body
 			cursor: pointer
 
 		.content-row-header
-			font-weight: 500
+			font-weight: bold
 			color: black
 			border-bottom: 1px solid black
 
 		.content-cell
 			display: table-cell
 			width: 30%
-			&.content-name
+
+		&.files
+			&.content-cell-name
 				width: 50%
-			&.content-tags
-			&.content-date
+			&.content-cell-tags
+			&.content-cell-date
 				width: 25%
+
+		&.sites
+			&.content-cell-name
+				width: 100%
 
 		.content-buttons
 			opacity: 0
 			float: right
 
 		.button:hover
-		.content-name:hover .content-title
+		.content-cell-name:hover .content-name
 			text-decoration: underline
 			color: colorSiteBackground
 
 		.content-row:hover
 			font-weight: bold
+
+		.content-row:hover
 			.content-buttons
 				opacity: 1

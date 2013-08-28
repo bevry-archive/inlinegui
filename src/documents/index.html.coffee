@@ -10,6 +10,26 @@ aside '.app', ->
 
 		img '.button.button-login', alt:'Login', src:'/images/login.png', width:'95px', height:'25px', ->
 
+	section '.sitesbar.mainbar', ->
+		header ->
+			span '.title', ->
+				'Sites'
+
+		div '.body', ->
+
+			div '.content-table.sites', ->
+				div '.content-row.content-row-header', ->
+					div '.content-cell.content-cell-name', ->
+						'Location'
+				div '.content-row', ->
+					div '.content-cell.content-cell-name', ->
+						span '.content-name', title:'Open site', ->
+							'http://localhost:9778'
+				div '.content-row', ->
+					div '.content-cell.content-cell-name', ->
+						span '.content-name', title:'Open site', ->
+							'http://docpad.org'
+
 	nav '.navbar', ->
 		span '.left', ->
 			span '.link.link-site', ->
@@ -56,17 +76,17 @@ aside '.app', ->
 
 		div '.body', ->
 
-			div '.content-table', ->
+			div '.content-table.files', ->
 				div '.content-row.content-row-header', ->
-					div '.content-cell.content-name', ->
+					div '.content-cell.content-cell-name', ->
 						'Title'
-					div '.content-cell.content-tags', ->
+					div '.content-cell.content-cell-tags', ->
 						'Tags'
-					div '.content-cell.content-date', ->
+					div '.content-cell.content-cell-date', ->
 						'Date'
-				div '.content-row.content-row-file', ->
-					div '.content-cell.content-name', ->
-						span '.content-title', title:'Open file', ->
+				div '.content-row', ->
+					div '.content-cell.content-cell-name', ->
+						span '.content-name', title:'Open file', ->
 							'File title'
 						span '.content-buttons', ->
 							span '.button.button-edit', title:'Edit file', ->
@@ -75,9 +95,9 @@ aside '.app', ->
 							span '.button.button-delete', title:'Delete file', ->
 								span '.icon.icon-trash', ->
 								text 'Delete'
-					div '.content-cell.content-tags', ->
+					div '.content-cell.content-cell-tags', ->
 						'File tags'
-					div '.content-cell.content-date', ->
+					div '.content-cell.content-cell-date', ->
 						'File date'
 
 	section '.editbar.show-page', ->
