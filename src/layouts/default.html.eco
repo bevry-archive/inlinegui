@@ -33,15 +33,7 @@
 	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="icons/apple-touch-icon-144x144-precomposed.png" />
 </head>
 <body>
-    <!--[if lt IE 7]>
-        <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
-    <![endif]-->
-
-	<header></header>
-	<article>
-		<%- @content %>
-	</article>
-	<footer></footer>
+	<%- @content %>
 
 	<!-- DocPad Scripts + Our Own -->
 	<%- @getBlock('scripts').add(@site.scripts).toHTML() %>

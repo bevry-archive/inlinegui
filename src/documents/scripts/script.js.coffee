@@ -194,7 +194,7 @@ class App extends Spine.Controller
 		$target = $(e.currentTarget)
 		$row = $target.parents('.content-row:first')
 		file = $row.data('file')
-		title = file.meta.title or file.filename
+		title = file.get('title') or file.get('filename')
 
 		# View
 		@editView = editView = new FileEditItem({item:file})
