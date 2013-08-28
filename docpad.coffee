@@ -59,6 +59,8 @@ docpadConfig = {
 
 				'/vendor/codemirror/codemirror.js'
 
+				'//login.persona.org/include.js'
+
 				'/scripts/script.js'
 			]
 

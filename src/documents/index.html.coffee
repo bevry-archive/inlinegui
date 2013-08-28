@@ -6,6 +6,10 @@ title: 'Inline GUI'
 aside '.app', ->
 	aside '.loadbar', ->
 
+	section '.loginbar.mainbar', ->
+
+		img '.button.button-login', alt:'Login', src:'/images/login.png', width:'95px', height:'25px', ->
+
 	nav '.navbar', ->
 		span '.left', ->
 			span '.link.link-site', ->

@@ -108,10 +108,14 @@ class App extends Spine.Controller
 		'click .button-edit, .content-name': 'clickFile'
 		'click .navbar .toggle': 'clickToggle'
 		'click .navbar .button': 'clickButton'
+		'click .button-login': 'clickLogin'
 
 	routes:
 		'/:collectionName/': 'routeCollection'
 		'/:collectionName/:relativePath': 'routeFile'
+
+	clickLogin: (e) ->
+		navigator.id.request()
 
 	routeCollection: (opts) ->
 		{collectionName} = opts
@@ -149,12 +153,28 @@ class App extends Spine.Controller
 		for key,value of @routes
 			@route(key, @[value])
 
+		# Login
+		currentUser = localStorage.getItem('currentUser') or null
+		navigator.id.watch(
+			loggedInUser: currentUser
+			onlogin: (args...) ->
+				# ignore as we listen to post message
+			onlogout: ->
+				localStorage.setItem('currentUser', null)
+		)
+		@loginUser(currentUser)  if currentUser
+
 		# Once loaded init routes and set us as ready
 		Spine.Ajax.queue (args...) =>
 			Spine.Route.setup()
 			@$el.addClass('app-ready')
 
 		# Chain
+		@
+
+	loginUser: (email) ->
+		localStorage.setItem('currentUser', email)
+		@$('.loginbar').hide()
 		@
 
 	addFile: (item) =>
@@ -295,29 +315,33 @@ class App extends Spine.Controller
 	onWindowResize: =>
 		# Prepare
 		$window = $(window)
-		$previewbar = this.$el.find('.previewbar')
+		$previewbar = @$el.find('.previewbar')
 
 		# Apply
 		$previewbar.css(
-			minHeight: $window.height() - (this.$el.outerHeight() - $previewbar.height())
+			minHeight: $window.height() - (@$el.outerHeight() - $previewbar.height())
 		)
 
 		# Chain
 		@
 
-	onChildMessage: (event) =>
+	onMessage: (event) =>
 		# Extract
 		data = event.originalEvent?.data or event.data or {}
-		{action} = data
+		data = JSON.parse(data)  if typeof data is 'string'
 
 		# Handle
-		switch action
-			when 'resizeChild'
+		switch true
+			when data.action is 'resizeChild'
 				# Prepare
-				$previewbar = this.$el.find('.previewbar')
+				$previewbar = @$el.find('.previewbar')
 
 				# Apply
 				$previewbar.height(String(data.height)+'px')
+
+			when data.d?.assertion?
+				# Prepare
+				@loginUser(data.d.email)
 
 			else
 				console.log('Unknown message from child:', data)
@@ -330,4 +354,4 @@ window.app = app = new App(
 )
 $(window)
 	.on('resize', app.onWindowResize.bind(app))
-	.on('message', app.onChildMessage.bind(app))
+	.on('message', app.onMessage.bind(app))
