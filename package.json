@@ -38,7 +38,7 @@
     "npm": ">=1.2"
   },
   "dependencies": {
-    "docpad": "~6.51.2",
+    "docpad": "~6.51.3",
     "docpad-plugin-coffeescript": "~2.2.2",
     "docpad-plugin-eco": "~2.0.2",
     "docpad-plugin-marked": "~2.1.1",
