@@ -12,6 +12,7 @@ aside '.app', ->
 
 	section '.sitesbar.mainbar', ->
 		header ->
+
 			span '.title', ->
 				'Sites'
 
