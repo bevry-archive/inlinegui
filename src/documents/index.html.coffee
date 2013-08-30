@@ -16,6 +16,11 @@ aside '.app', ->
 			span '.title', ->
 				'Sites'
 
+			ul '.button.button-add', ->
+				li '.button-add-site', ->
+					text 'Add Site'
+					span '.icon.icon-plus', ->
+
 		div '.body', ->
 
 			div '.content-table.sites', ->
@@ -70,6 +75,13 @@ aside '.app', ->
 		header ->
 			span '.title', ->
 				'Database Listing'
+
+			ul '.button.button-add.button-drop', ->
+				li ->
+					text 'Add new'
+					span '.icon.icon-plus', ->
+				li '.button-add-document', -> 'Document'
+				li '.button-add-upload', -> 'Upload'
 
 		div '.body', ->
 
