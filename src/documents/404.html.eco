@@ -1,8 +1,13 @@
+---
+dynamic: true
+---
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
+        <%- @getBlock('meta').toHTML() %>
         <title>Page Not Found :(</title>
+        <%- @getBlock('styles').toHTML() %>
         <style>
             ::-moz-selection {
                 background: #b3d4fc;
@@ -148,10 +153,15 @@
                 <li>a mistyped address</li>
                 <li>an out-of-date link</li>
             </ul>
+            <p>Perhaps you were after one of these:</p>
+            <ul><% for page in @getFiles(url: $startsWith: @req.url).toJSON(): %>
+                <li><a href="<%= page.url %>"><%- page.url.replace(@req.url, '') %></a></li>
+            <% end %></ul>
             <script>
                 var GOOG_FIXURL_LANG = (navigator.language || '').slice(0,2),GOOG_FIXURL_SITE = location.host;
             </script>
             <script src="http://linkhelp.clients.google.com/tbproxy/lh/wm/fixurl.js"></script>
         </div>
+        <%- @getBlock('scripts').toHTML() %>
     </body>
 </html>
