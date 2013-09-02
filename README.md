@@ -8,6 +8,10 @@ An Inline GUI/CMS for any backend! Currently supports for the following backends
 
 - [DocPad](http://docpad.org) via the [inlinegui docpad plugin](http://docpad.org/p/inlinegui)
 
+Add support to your own backend by implementing the [Web Write Spec](https://github.com/webwrite/spec).
+
+**Under heavy and fast development. [Watch the Dev Update Videos to get the latest info!](https://cloudup.com/cF6jns2vGKv)**
+
 
 ## Previews
 
