@@ -2,7 +2,7 @@ wait = (delay,fn) -> setTimeout(fn,delay)
 siteUrl = "http://localhost:9778"
 Spine.Model.host = siteUrl
 
-class File extends Spine.Model
+window.File = class File extends Spine.Model
 	@configure('File',
 		'meta'
 		'attrs'
@@ -36,15 +36,15 @@ class File extends Spine.Model
 		return value
 
 class FileEditItem extends Spine.Controller
-	el: $('.editbar').remove().first().prop('outerHTML')
+	el: $('.pageeditbar').remove().first().prop('outerHTML')
 
 	elements:
 		'.field-title  :input': '$title'
 		'.field-date   :input': '$date'
 		'.field-author :input': '$author'
 		'.file-source': '$source'
-		'.previewbar': '$previewbar'
-		'.sourcebar': '$sourcebar'
+		'.pagepreviewbar': '$previewbar'
+		'.source': '$sourcebar'
 		'.metabar': '$metabar'
 
 	render: =>
@@ -59,9 +59,9 @@ class FileEditItem extends Spine.Controller
 		# @todo figure out why file.url doesn't work
 
 		# Editor
-		@editor = CodeMirror.fromTextArea($source.get(0), {
-			mode: item.get('contentType')
-		})
+		#@editor = CodeMirror.fromTextArea($source.get(0), {
+		#	mode: item.get('contentType')
+		#})
 
 		# Chain
 		@
@@ -93,9 +93,9 @@ class App extends Spine.Controller
 
 	elements:
 		'.loadbar': '$loadbar'
-		'.navbar': '$navbar'
-		'.navbar .link': '$links'
-		'.navbar .toggle': '$toggles'
+		'.menu': '$menu'
+		'.menu .link': '$links'
+		'.menu .toggle': '$toggles'
 		'.link-site': '$linkSite'
 		'.link-page': '$linkPage'
 		'.toggle-preview': '$togglePreview'
@@ -104,35 +104,41 @@ class App extends Spine.Controller
 		'.content-row-file': '$files'
 
 	events:
-		'click .link-site': 'clickSite'
-		'click .content-cell-name': 'clickFile'
-		'click .navbar .toggle': 'clickToggle'
-		'click .navbar .button': 'clickButton'
+		'click .sites .content-cell-name': 'clickSite'
+		'click .files .content-cell-name': 'clickFile'
+		'click .menu .link': 'clickMenuLink'
+		'click .menu .toggle': 'clickMenuToggle'
+		'click .menu .button': 'clickMenuButton'
 		'click .button-login': 'clickLogin'
 
 	routes:
-		'/:collectionName/': 'routeCollection'
-		'/:collectionName/*relativePath': 'routeFile'
+		'/': 'routeApp'
+		'/site/:siteId/': 'routeApp'
+		'/site/:siteId/:collectionId': 'routeApp'
+		'/site/:siteId/:collectionId/*filePath': 'routeApp'
 
 	clickLogin: (e) ->
 		navigator.id.request()
 
-	routeCollection: (opts) ->
-		{collectionName} = opts
+	routeApp: (opts) ->
+		# Prepare
+		{siteId, collectionId, filePath} = opts
 
-		@openCollection(collectionName)
+		# Has file
+		if filePath
+			files = File.all().filter (file) ->
+				return file.get('relativePath') is filePath
 
-	routeFile: (opts) ->
-		{collectionName, relativePath} = opts
+			if files.length is 1
+				@openApp(siteId, collectionId, files[0])
+			else
+				console.log('error')
 
-		files = File.all().filter (file) ->
-			return file.get('relativePath') is relativePath
-
-		if files.length is 1
-			@openFile(files[0])
+		# Otherwise
 		else
-			console.log('error')
+			@openApp(siteId, collectionId)
 
+		# Chain
 		@
 
 	constructor: ->
@@ -142,16 +148,22 @@ class App extends Spine.Controller
 		# Fetch
 		File.bind('create', @addFile)
 		File.bind('refresh change', @addFiles)
-		File.fetch()
 		# @todo figure out how to release/destroy files
 
 		# Apply
-		@openCollection('database')
 		@onWindowResize()
+		@setAppMode('login')
 
 		# Setup routes
 		for key,value of @routes
 			@route(key, @[value])
+
+		# Once loaded init routes and set us as ready
+		Spine.Route.setup()
+
+		# Ajax queue events
+		Spine.Ajax.queue (args...) =>
+			# hide a loading bar
 
 		# Login
 		currentUser = localStorage.getItem('currentUser') or null
@@ -162,19 +174,31 @@ class App extends Spine.Controller
 			onlogout: ->
 				localStorage.setItem('currentUser', '')
 		)
+
+		# Login the user if we already have one
 		@loginUser(currentUser)  if currentUser
 
-		# Once loaded init routes and set us as ready
-		Spine.Ajax.queue (args...) =>
-			Spine.Route.setup()
-			@$el.addClass('app-ready')
+		# Set the app as ready
+		@$el.addClass('app-ready')
 
 		# Chain
 		@
 
+	mode: null
+	setAppMode: (mode) ->
+		@mode = mode
+		@$el
+			.removeClass('app-login app-admin app-site app-page')
+			.addClass('app-'+mode)
+		@
+
 	loginUser: (email) ->
-		localStorage.setItem('currentUser', email)
-		@$('.loginbar').hide()
+		if email
+			# Apply the user
+			localStorage.setItem('currentUser', email)
+
+			# Update navigation
+			@openApp()  if @mode is 'login'
 		@
 
 	addFile: (item) =>
@@ -184,13 +208,17 @@ class App extends Spine.Controller
 			.appendTo($filesList)
 		@
 
-	addFiles: =>
+	resetFiles: =>
 		{$files} = @
 		$files.remove()
+		@
+
+	addFiles: =>
+		@resetFiles()  # todo make this better
 		@addFile(file)  for file in File.all()
 		@
 
-	clickButton: (e) =>
+	clickMenuButton: (e) =>
 		# Prepare
 		{$loadbar} = @
 		target = e.currentTarget
@@ -210,7 +238,7 @@ class App extends Spine.Controller
 		# Chain
 		@
 
-	clickToggle: (e) =>
+	clickMenuToggle: (e) =>
 		# Prepare
 		$target = $(e.currentTarget)
 
@@ -230,6 +258,36 @@ class App extends Spine.Controller
 		# Chain
 		@
 
+	clickMenuLink: (e) =>
+		# Prepare
+		$target = $(e.currentTarget)
+
+		# Handle
+		switch true
+			when $target.hasClass('link-admin')
+				@openApp()
+			when $target.hasClass('link-site')
+				@openApp(@currentSite, @currentCollection)
+
+		# Chain
+		@
+
+	clickSite: (e) =>
+		# Disable click through
+		e.preventDefault()
+		e.stopPropagation()
+
+		# Prepare
+		$target = $(e.currentTarget)
+		$row = $target.parents('.content-row:first')
+		siteId = $row.data('site')
+
+		# Open the site
+		@openApp(siteId)
+
+		# Chain
+		@
+
 	clickFile: (e) =>
 		# Disable click through
 		e.preventDefault()
@@ -240,74 +298,97 @@ class App extends Spine.Controller
 		$row = $target.parents('.content-row:first')
 		file = $row.data('file')
 
-		# Navigate
-		@navigate('/database/'+file.get('relativePath'))
+		# Open the file
+		@openApp(@currentSite, @currentCollection, file)
 
 		# Chain
 		@
 
-	openFile: (file) =>
-		# Clean
-		if @editView?
-			@editView.release()
-			@editView = null
+	currentSite: null
+	currentCollection: null
+	currentFile: null
 
-		# Prepare
-		{$el, $toggleMeta, $links, $linkPage, $toggles, $togglePreview} = @
-		title = file.get('title') or file.get('filename')
+	openApp: (siteId, collectionId='database', file) ->
+		# Log
+		console.log 'openApp', {siteId, collectionId, file}
 
-		# View
-		@editView = editView = new FileEditItem({item:file})
-		editView.render()
+		# Reset
+		@currentSite =
+			@currentCollection =
+			@currentFile = null
 
-		# Apply
-		$el.removeClass('app-site').addClass('app-page')
-		$links.removeClass('active')
-		$linkPage.text(title).addClass('active')
-		$toggles.removeClass('active')
+		# Site
+		if siteId
+			# Select
+			@currentSite = siteId
 
-		$togglePreview.addClass('active')
-		editView.$previewbar.show()
+			# Select
+			@currentCollection = collectionId
 
-		# Bars
-		editView.$sourcebar.hide()
-		###
-		if $target.hasClass('button-edit')
-			$toggleMeta
-				.addClass('active')
-			editView.$metabar.show()
+			# File
+			if file
+				# Select
+				@currentFile = file
+
+				# Delete the old edit view
+				if @editView?
+					@editView.release()
+					@editView = null
+
+				# Prepare
+				{$el, $toggleMeta, $links, $linkPage, $toggles, $togglePreview} = @
+				title = file.get('title') or file.get('filename')
+
+				# View
+				@editView = editView = new FileEditItem({item:file})
+				editView.render()
+
+				# Apply
+				@setAppMode('page')
+				$links.removeClass('active')
+				$linkPage.text(title).addClass('active')
+
+				# Bars
+				$toggles.removeClass('active')
+
+				$togglePreview.addClass('active')
+				editView.$previewbar.show()
+
+				editView.$sourcebar.hide()
+				###
+				if $target.hasClass('button-edit')
+					$toggleMeta
+						.addClass('active')
+					editView.$metabar.show()
+				else
+					editView.$metabar.hide()
+				###
+
+				# View
+				editView.appendTo($el)
+				@onWindowResize()
+
+				# Navigate to file
+				@navigate('/site/'+siteId+'/'+collectionId+'/'+file.get('relativePath'))
+
+			# No file
+			else
+				# Apply
+				@setAppMode('site')
+
+				# Fetch all the files for the collection
+				File.fetch()
+
+				# Navigate to site default collection
+				@navigate('/site/'+siteId+'/'+collectionId)
+
+		# No site
 		else
-			editView.$metabar.hide()
-		###
+			# Apply
+			@setAppMode('admin')
 
-		# View
-		editView.appendTo($el)
-		@onWindowResize()
-
-	clickSite: =>
-		# Navigate
-		@navigate('/database/')
-
-		# Chain
-		@
-
-	openCollection: (collectionName) ->
-		# Clean
-		if @editView?
-			@editView.release()
-			@editView = null
-
-		# Prepare
-		collectionName ?= 'database'
-		{$el, $linkSite} = @
-
-		# Apply
-		$el
-			.removeClass('app-page')
-			.addClass('app-site')
-		$linkSite
-			.addClass('active')
-			.siblings().removeClass('active')
+			# Navigate to admin
+			@navigate('/')
 
 		# Chain
 		@

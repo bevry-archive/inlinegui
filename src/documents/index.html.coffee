@@ -6,38 +6,15 @@ title: 'Inline GUI'
 aside '.app', ->
 	aside '.loadbar', ->
 
-	section '.loginbar.mainbar', ->
-
-		img '.button.button-login', alt:'Login', src:'/images/login.png', width:'95px', height:'25px', ->
-
-	section '.sitesbar.mainbar', ->
-		header ->
-
-			span '.title', ->
-				'Sites'
-
-			ul '.button.button-add', ->
-				li '.button-add-site', ->
-					text 'Add Site'
-					span '.icon.icon-plus', ->
-
-		div '.body', ->
-
-			div '.content-table.sites', ->
-				div '.content-row.content-row-header', ->
-					div '.content-cell.content-cell-name', ->
-						'Location'
-				div '.content-row.content-row-site', ->
-					div '.content-cell.content-cell-name', ->
-						span '.content-name', title:'Open site', ->
-							'http://localhost:9778'
-
-	nav '.navbar', ->
+	nav '.menu', ->
 		span '.left', ->
-			span '.link.link-site', ->
+			span '.link.link-admin', ->
 				text 'Admin'
 
-			span '.link.link-page.show-page', ->
+			span '.link.link-site', ->
+				text 'Site'
+
+			span '.link.link-page', ->
 				text 'Page'
 
 		span '.right.show-page', ->
@@ -61,17 +38,49 @@ aside '.app', ->
 
 			span '.toggle.toggle-meta', ->
 				span '.icon.icon-info', ->
-				#span '.icon.icon-reorder', ->
-				#span '.icon.icon-info-sign', ->
-				#span '.icon.icon-cog', ->
-				#span '.icon.icon-code', ->
-				#span '.icon.icon-list', ->
 
 			span '.toggle.toggle-preview', ->
 				span '.icon.icon-globe', ->
-				#span '.icon.icon-eye-open', ->
 
-	section '.sitebar.mainbar.show-site', ->
+	section '.login.modal.main.show-login', ->
+		img '.button.button-login', alt:'Login', src:'/images/login.png', width:'95px', height:'25px', ->
+
+	section '.site-add.modal.main.show-admin', ->
+		header ->
+			span '.title', -> 'Add Site'
+
+		div '.body', ->
+			div '.field.field-location', ->
+				label -> 'Site Title'
+				input type:'text', ->
+
+			div '.field.field-date', ->
+				label -> 'Security Token'
+				input type:'text', ->
+
+
+	section '.site-list.main.show-admin', ->
+		header ->
+			span '.title', ->
+				'Sites'
+
+			ul '.button.button-add', ->
+				li '.button-add-site', ->
+					text 'Add Site'
+					span '.icon.icon-plus', ->
+
+		div '.body', ->
+			div '.content-table.sites', ->
+				div '.content-row.content-row-header', ->
+					div '.content-cell.content-cell-name', ->
+						'Location'
+
+				div '.content-row.content-row-site', 'data-site':1, ->
+					div '.content-cell.content-cell-name', ->
+						span '.content-name', title:'Open site', ->
+							'http://localhost:9778'
+
+	section '.page-list.main.show-site', ->
 		header ->
 			span '.title', ->
 				'Database Listing'
@@ -84,7 +93,6 @@ aside '.app', ->
 				li '.button-add-upload', -> 'Upload'
 
 		div '.body', ->
-
 			div '.content-table.files', ->
 				div '.content-row.content-row-header', ->
 					div '.content-cell.content-cell-name', ->
@@ -93,6 +101,7 @@ aside '.app', ->
 						'Tags'
 					div '.content-cell.content-cell-date', ->
 						'Date'
+
 				div '.content-row.content-row-file', ->
 					div '.content-cell.content-cell-name', ->
 						span '.content-name', title:'Open file', ->
@@ -109,20 +118,19 @@ aside '.app', ->
 					div '.content-cell.content-cell-date', ->
 						'File date'
 
-	section '.editbar.show-page', ->
-		section '.sourcebar.mainbar', ->
+	section '.page-edit.show-page', ->
+		section '.page-source.main', ->
 			header '.title', ->
 				'Page Source'
 
 			div '.body', ->
 				textarea '.file-source', ->
 
-		section '.metabar.mainbar', ->
+		section '.page-meta.main', ->
 			header '.title', ->
 				'Page Settings'
 
 			div '.body', ->
-
 				div '.field.field-title', ->
 					label ->
 						'Title'
@@ -139,4 +147,4 @@ aside '.app', ->
 					select ->
 						option -> 'Benjamin Lupton'
 
-		iframe '.previewbar', ->
+		iframe '.page-preview', ->
