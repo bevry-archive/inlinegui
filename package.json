@@ -45,7 +45,8 @@
     "docpad-plugin-partials": "~2.8.0",
     "docpad-plugin-stylus": "~2.4.0",
     "docpad-plugin-text": "~2.3.0",
-    "docpad-plugin-coffeekup": "~2.2.0"
+    "docpad-plugin-coffeekup": "~2.2.0",
+    "docpad-plugin-ghpages": "~2.3.0"
   },
   "devDependencies": {
     "docpad-plugin-livereload": "~2.5.3"
