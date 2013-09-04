@@ -259,8 +259,10 @@ class App extends Spine.Controller
 			.addClass('app-'+mode)
 		@
 
-	openApp: ({site, collection, file, navigate}) ->
+	openApp: (opts) ->
 		# Prepare
+		opts ?= {}
+		{site, collection, file, navigate} = opts
 		site ?= null
 		collection ?= 'database'
 		file ?= null
@@ -297,8 +299,7 @@ class App extends Spine.Controller
 
 				# Apply
 				@setAppMode('page')
-				$links.removeClass('active')
-				$linkPage.text(title).addClass('active')
+				$linkPage.text(title)
 
 				# Bars
 				$toggles.removeClass('active')
@@ -309,8 +310,7 @@ class App extends Spine.Controller
 				editView.$sourcebar.hide()
 				###
 				if $target.hasClass('button-edit')
-					$toggleMeta
-						.addClass('active')
+					$toggleMeta.addClass('active')
 					editView.$metabar.show()
 				else
 					editView.$metabar.hide()
@@ -499,7 +499,7 @@ class App extends Spine.Controller
 
 		# Open the site
 		@openApp({
-			site: item.get('id')
+			site: item
 		})
 
 		# Chain

@@ -42,23 +42,52 @@ paddingBodySides = 15px
 // Mixins
 
 header()
-	line-height: heightMenu
-	font-size:  (heightMenu * 0.7)
+	line-height:   heightMenu
+	font-size:    (heightMenu * 0.7)
 
 headerLink()
-	line-height: (heightMenu)
-	font-size:   (heightMenu / 2)
-	padding:   0 paddingBodySides
+	line-height:  (heightMenu)
+	font-size:    (heightMenu / 2)
+	padding:     0 paddingBodySides
 
 headerButton()
-	line-height: (heightMenu / 12 * 8)
-	font-size:   (heightMenu / 12 * 4.5)
-	padding:   0 (heightMenu / 12 * 3)
+	line-height:  (heightMenu / 12 * 8)
+	font-size:    (heightMenu / 12 * 4.5)
+	padding:    0 (heightMenu / 12 * 3)
 
 headerToggle()
-	line-height: (heightMenu)
-	font-size:   (heightMenu / 12 * 4.5)
-	padding:   0 (heightMenu / 12 * 3)
+	line-height:  (heightMenu)
+	font-size:    (heightMenu / 12 * 4.5)
+	padding:    0 (heightMenu / 12 * 3)
+
+bottomArrow()
+	&:before
+		top: (heightMenu - heightSwitch)
+		left: 50%
+		buttom: auto
+		right: auto
+	&:after
+		height: (heightSwitch * 1.5)
+		width: 40%
+
+		top: auto
+		left: 30%
+		bottom: 0
+		right: auto
+
+rightArrow()
+	&:before
+		top: (heightMenu / 2 - heightSwitch)
+		left: auto
+		bottom: auto
+		right: (heightSwitch * -1)
+	&:after
+		height: 40%
+		width: (heightSwitch * 1.5)
+		top: 30%
+		left: auto
+		bottom: auto
+		right: 0
 
 
 // ====================================
@@ -261,6 +290,8 @@ body
 		.show-admin
 		.show-page
 			display: none
+		.link-admin
+			rightArrow()
 
 	&.app-page
 		.menu
@@ -269,6 +300,9 @@ body
 		.show-admin
 		.show-site
 			display: none
+		.link-admin
+		.link-site
+			rightArrow()
 
 .page-edit
 	margin-bottom: -5px
@@ -337,61 +371,40 @@ body
 
 	.link
 		headerLink()
+		bottomArrow()
+
 		font-family: fontFamilyHeader
 		font-weight: 400
 		position: relative
 
+		&:hover
+			text-decoration: underline
+
 		&.link-admin
+			z-index: 5
 			&, &:after
 				background: colorAdminBackground
 			&:before
 				border: heightSwitch solid colorAdminBackground
 
 		&.link-site
+		&.link-page
+			padding-left: (paddingBodySides * 1.5)
+			margin-left:  (paddingBodySides * -1)
+
+		&.link-site
+			z-index: 4
 			&, &:after
 				background: colorSiteBackground
 			&:before
 				border: heightSwitch solid colorSiteBackground
 
 		&.link-page
+			z-index: 3
 			&, &:after
 				background: colorPageBackground
 			&:before
 				border: heightSwitch solid colorPageBackground
-
-		&.link-admin.active
-		&.link-site.active
-		&.link-page
-			&:before
-				top: (heightMenu - heightSwitch)
-				left: 50%
-			&:after
-				height: (heightSwitch * 1.5)
-				width: 40%
-				bottom: 0
-				left: 30%
-
-		&.link-admin:not(.active)
-		&.link-site:not(.active)
-			&:before
-				top: (heightMenu / 2 - heightSwitch)
-				right: (heightSwitch * -1)
-			&:after
-				width: (heightSwitch * 1.5)
-				height: 40%
-				right: 0
-				top: 30%
-
-		&:not(.disabled)
-			&:hover
-				text-decoration: underline
-			&:hover
-			&.active
-				opacity: 1
-
-		&.disabled
-			opacity: 0
-			cursor: default
 
 		&:before
 			width: 0
