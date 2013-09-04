@@ -50,13 +50,20 @@ aside '.app', ->
 			span '.title', -> 'Add Site'
 
 		div '.body', ->
-			div '.field.field-location', ->
-				label -> 'Site Title'
-				input type:'text', ->
+			form '.site-add-form', action:'', method:'PUT', ->
+				div '.field.field-url', ->
+					label -> 'Site URL'
+					input type:'text', value:'http://localhost:9778', ->
 
-			div '.field.field-date', ->
-				label -> 'Security Token'
-				input type:'text', ->
+				div '.field.field-token', ->
+					label -> 'Security Token'
+					input type:'text', ->
+
+				div '.field.field-name', ->
+					label -> 'Site Name'
+					input type:'text', ->
+
+				input type:'submit', value:'Submit'
 
 
 	section '.site-list.main.show-admin', ->
