@@ -1,5 +1,6 @@
 wait = (delay,fn) -> setTimeout(fn,delay)
 siteUrl = "http://localhost:9778"
+siteToken = "blah"
 Spine.Model.host = siteUrl
 
 
@@ -23,22 +24,29 @@ class Site extends Model
 
 class File extends Model
 	@configure('File',
+		'id'
 		'meta'
 		'attrs'
 	)
 
 	@extend Spine.Model.Ajax
 
-	@url: "#{siteUrl}/restapi/documents/?additionalFields=source"
+	@url: "#{siteUrl}/restapi/documents/?additionalFields=source&securityToken=#{siteToken}"
 
 	@fromJSON: (response) ->
-		return  unless response
+		unless response
+			return []
+		if response.success is false
+			alert response.message
+			return []
 
 		adjust = (data) ->
 			meta = data.meta
 			delete data.meta
+			id = data.id
+			delete data.id
 			attrs = data
-			result = {meta, attrs}
+			result = {id, meta, attrs}
 			return result
 
 		if Spine.isArray(response.data)
@@ -62,7 +70,13 @@ class File extends Model
 # =====================================
 # Controllers
 
-class FileEditItem extends Spine.Controller
+class Controller extends Spine.Controller
+	destroy: ->
+		@release()
+		@item?.destroy()
+		@
+
+class FileEditItem extends Controller
 	el: $('.pageeditbar').remove().first().prop('outerHTML')
 
 	elements:
@@ -79,6 +93,10 @@ class FileEditItem extends Spine.Controller
 		{item, $el, $title, $date, $author, $previewbar, $source} = @
 
 		# Apply
+		$el
+			.addClass('file-edit-item-'+item.id)
+			.data('item', item)
+			.data('controller', @)
 		$title.val  item.get('title') or item.get('filename') or ''
 		$date.val   item.get('date')?.toISOString()
 		$source.val item.get('source')
@@ -93,7 +111,7 @@ class FileEditItem extends Spine.Controller
 		# Chain
 		@
 
-class FileListItem extends Spine.Controller
+class FileListItem extends Controller
 	el: $('.content-table.files .content-row:last').remove().first().prop('outerHTML')
 
 	elements:
@@ -106,7 +124,10 @@ class FileListItem extends Spine.Controller
 		{item, $el, $title, $tags, $date} = @
 
 		# Apply
-		$el.data('item', item)
+		$el
+			.addClass('file-list-item-'+item.id)
+			.data('item', item)
+			.data('controller', @)
 		$title.text  item.get('title') or item.get('filename') or ''
 		$tags.text  (item.get('tags') or []).join(', ') or ''
 		$date.text  item.get('date')?.toLocaleDateString() or ''
@@ -114,7 +135,7 @@ class FileListItem extends Spine.Controller
 		# Chain
 		@
 
-class SiteListItem extends Spine.Controller
+class SiteListItem extends Controller
 	el: $('.content-table.sites .content-row:last').remove().first().prop('outerHTML')
 
 	elements:
@@ -125,14 +146,17 @@ class SiteListItem extends Spine.Controller
 		{item, $el, $name} = @
 
 		# Apply
-		$el.data('item', item)
+		$el
+			.addClass('site-list-item-'+item.id)
+			.data('item', item)
+			.data('controller', @)
 		$name.text item.get('name') or item.get('url') or ''
 
 		# Chain
 		@
 
 
-class App extends Spine.Controller
+class App extends Controller
 	# ---------------------------------
 	# Constructor
 
@@ -146,9 +170,7 @@ class App extends Spine.Controller
 		'.toggle-preview': '$togglePreview'
 		'.toggle-meta': '$toggleMeta'
 		'.content-table.files': '$filesList'
-		'.content-row-file': '$files'
 		'.content-table.sites': '$sitesList'
-		'.content-row-site': '$sites'
 
 	events:
 		'click .sites .content-cell-name': 'clickSite'
@@ -159,6 +181,7 @@ class App extends Spine.Controller
 		'click .button-login': 'clickLogin'
 		'click .button-add-site': 'clickAddSite'
 		'submit .site-add-form': 'submitSite'
+		'click .site-add-form .button-cancel': 'submitSiteCancel'
 
 	routes:
 		'/': 'routeApp'
@@ -171,13 +194,15 @@ class App extends Spine.Controller
 		super
 
 		# Sites
-		Site.bind('create', @addSite)
-		Site.bind('refresh change', @addSites)
+		Site.bind('save',    @updateSite)
+		Site.bind('destroy', @destroySite)
+		Site.bind('refresh', @updateSites)
 		Site.fetch()
 
 		# Files
-		File.bind('create', @addFile)
-		File.bind('refresh change', @addFiles)
+		File.bind('save',    @updateFile)
+		File.bind('destroy', @destroyFile)
+		File.bind('refresh', @updateFiles)
 		# @todo figure out how to release/destroy files
 
 		# Apply
@@ -298,7 +323,6 @@ class App extends Spine.Controller
 				editView.render()
 
 				# Apply
-				@setAppMode('page')
 				$linkPage.text(title)
 
 				# Bars
@@ -320,16 +344,19 @@ class App extends Spine.Controller
 				editView.appendTo($el)
 				@onWindowResize()
 
+				# Apply
+				@setAppMode('page')
+
 				# Navigate to file
 				@navigate('/site/'+site.get('id')+'/'+collection+'/'+file.get('relativePath'))  if navigate
 
 			# No file
 			else
-				# Apply
-				@setAppMode('site')
-
 				# Fetch all the files for the collection
 				File.fetch()
+
+				# Apply
+				@setAppMode('site')
 
 				# Navigate to site default collection
 				@navigate('/site/'+site.get('id')+'/'+collection)  if navigate
@@ -361,46 +388,87 @@ class App extends Spine.Controller
 	# ---------------------------------
 	# View Updates
 
-	addFile: (item) =>
-		view = new FileListItem({item})
-			.render()
-			.appendTo(@$filesList)
-		@
+	destroyController: ({findMethod}, item) =>
+		controller = findMethod(item)
+		controller?.destroy()
+		return controller
 
-	resetFiles: =>
-		@$files.remove()
-		@
+	updateController: ({$list, klass, findMethod}, item) =>
+		controller = findMethod(item)
+		if controller?
+			controller.render()
+		else
+			controller = new klass({item})
+				.render()
+				.appendTo($list)
+		return controller
 
-	addFiles: =>
-		@resetFiles()  # todo make this better
-		@addFile(file)  for file in File.all()
-		@
+	updateControllers: ({$items, updateMethod}, items) =>
+		# remove items that we no longer have
+		$items.each ->
+			$el = $(@)
+			if $el.data('item') not in items
+				$el.data('controller').destroy()
 
-	addSite: (item) =>
-		console.log 'add site'
-		view = new SiteListItem({item})
-			.render()
-			.appendTo(@$sitesList)
-		@
+		# update items we still have
+		controllers = []
+		for item in items
+			controllers.push updateMethod(item)
 
-	resetSites: =>
-		@$sites.remove()
-		@
+		# Return
+		return controllers
 
-	addSites: =>
-		@resetSites()  # todo make this better
-		@addSite(site)  for site in Site.all()
-		@
+
+	findFile: (item) =>
+		controller = $(".file-list-item-#{item.id}:first").data('controller')
+		return controller
+
+	destroyFile: (item) =>
+		findMethod = @findFile
+		return @destroyController({findMethod}, item)
+
+	updateFile: (item) =>
+		$list = @$filesList
+		klass = FileListItem
+		findMethod = @findFile
+		return @updateController({$list, klass, findMethod}, item)
+
+	updateFiles: (items) =>
+		$items = @$('.content-row-file')
+		updateMethod = @updateFile
+		return @updateControllers({$items, updateMethod}, items)
+
+
+
+	findSite: (item) =>
+		controller = $(".site-list-item-#{item.id}:first").data('controller')
+		return controller
+
+	destroySite: (item) =>
+		findMethod = @findSite
+		return @destroyController({findMethod}, item)
+
+	updateSite: (item) =>
+		$list = @$sitesList
+		klass = SiteListItem
+		findMethod = @findSite
+		return @updateController({$list, klass, findMethod}, item)
+
+	updateSites: (items) =>
+		$items = @$('.content-row-site')
+		updateMethod = @updateSite
+		return @updateControllers({$items, updateMethod}, items)
+
 
 
 	# ---------------------------------
 	# Events
 
-	clickAddSite: (e) ->
+	clickAddSite: (e) =>
 		@$('.site-add.modal').show()
 		@
 
-	submitSite: (e) ->
+	submitSite: (e) =>
 		# Disable click through
 		e.preventDefault()
 		e.stopPropagation()
@@ -414,27 +482,39 @@ class App extends Spine.Controller
 		url   or= null
 		token or= null
 		name  or= null
-		id    =   Site.all().length
 
 		# Create
 		if url and name
-			site = Site.create({id, url, token, name})
+			site = Site.create({url, token, name})
 			site.save()
-			alert 'added new site'
 		else
 			alert 'need more site data'
+
+		# Hide the modal
+		@$('.site-add.modal').hide()
 
 		# Chain
 		@
 
-	clickLogin: (e) ->
+	submitSiteCancel: (e) =>
+		# Disable click through
+		e.preventDefault()
+		e.stopPropagation()
+
+		# Hide the modal
+		@$('.site-add.modal').hide()
+
+		# Chain
+		@
+
+	clickLogin: (e) =>
 		navigator.id.request()
 
 	clickMenuButton: (e) =>
 		# Prepare
 		{$loadbar} = @
 		target = e.currentTarget
-		$target = $(e.currentTarget)
+		$target = $(target)
 
 		# Apply
 		if $loadbar.hasClass('active') is false or $loadbar.data('for') is target
@@ -493,14 +573,20 @@ class App extends Spine.Controller
 		e.stopPropagation()
 
 		# Prepare
-		$target = $(e.currentTarget)
+		$target = $(e.target)
 		$row = $target.parents('.content-row:first')
 		item = $row.data('item')
 
-		# Open the site
-		@openApp({
-			site: item
-		})
+		# Action
+		if $target.parents().andSelf().filter('.button-delete').length is 1
+			# Delete
+			controller = $row.data('controller')
+			controller.destroy()
+		else
+			# Open the site
+			@openApp({
+				site: item
+			})
 
 		# Chain
 		@
@@ -511,7 +597,7 @@ class App extends Spine.Controller
 		e.stopPropagation()
 
 		# Prepare
-		$target = $(e.currentTarget)
+		$target = $(e.target)
 		$row = $target.parents('.content-row:first')
 		item = $row.data('item')
 

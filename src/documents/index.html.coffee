@@ -1,6 +1,5 @@
 ---
 layout: 'default'
-title: 'Inline GUI'
 ---
 
 aside '.app', ->
@@ -63,7 +62,10 @@ aside '.app', ->
 					label -> 'Site Name'
 					input type:'text', ->
 
-				input type:'submit', value:'Submit'
+				input '.button.button-save', type:'submit', value:'Save'
+
+				button '.button.button-cancel', ->
+					'Cancel'
 
 
 	section '.site-list.main.show-admin', ->
@@ -86,6 +88,10 @@ aside '.app', ->
 					div '.content-cell.content-cell-name', ->
 						span '.content-name', title:'Open site', ->
 							'http://localhost:9778'
+						span '.content-buttons', ->
+							span '.button.button-delete', title:'Delete file', ->
+								span '.icon.icon-trash', ->
+								text 'Delete'
 
 	section '.page-list.main.show-site', ->
 		header ->

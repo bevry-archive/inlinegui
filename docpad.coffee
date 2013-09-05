@@ -12,7 +12,7 @@ docpadConfig = {
 		# Specify some site properties
 		site:
 			# The production url of our website
-			url: "http://website.com"
+			url: "http://webwrite.github.io/inlinegui/"
 
 			# Here are some old site urls that you would like to redirect from
 			oldUrls: [
@@ -21,16 +21,16 @@ docpadConfig = {
 			]
 
 			# The default title of our website
-			title: "Your Website"
+			title: "Inline GUI by Web Write"
 
 			# The website description (for SEO)
 			description: """
-				When your website appears in search results in say Google, the text here will be shown underneath your website's title.
+				A decoupled Inline GUI/CMS for any backend!
 				"""
 
 			# The website keywords (for SEO) separated by commas
 			keywords: """
-				place, your, website, keywoards, here, keep, them, related, to, the, content, of, your, website
+				inline, gui, web write, contenteditable, html5, cms, decoupled, backend agnostic
 				"""
 
 			# The website's styles
@@ -97,15 +97,21 @@ docpadConfig = {
 	# You can find a full listing of events on the DocPad Wiki
 	events:
 
+		# Render Document
+		renderDocument: (opts) ->
+			return  if 'development' in @docpad.getEnvironments()
+			if opts.extension is 'html'
+				siteUrl = @docpad.getConfig().templateData.site.url.replace(/\/+$/, '')
+				opts.content = opts.content.replace(/(['"])\/([^\/])/g, "$1#{siteUrl}/$2")
+
 		# Server Extend
 		# Used to add our own custom routes to the server before the docpad routes are added
 		serverExtend: (opts) ->
-			# Extract the server from the options
-			{server} = opts
+			# Prepare
 			docpad = @docpad
 
 			# CORS
-			server.use (req,res,next) ->
+			opts.server.use (req,res,next) ->
 				res.header('Access-Control-Allow-Origin', '*');
 				res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
 				res.header('Access-Control-Allow-Headers', 'Content-Type,X-Requested-With');
@@ -119,7 +125,7 @@ docpadConfig = {
 			newUrl = latestConfig.templateData.site.url
 
 			# Redirect any requests accessing one of our sites oldUrls to the new site url
-			server.use (req,res,next) ->
+			opts.server.use (req,res,next) ->
 				if req.headers.host in oldUrls
 					res.redirect(newUrl+req.url, 301)
 				else
