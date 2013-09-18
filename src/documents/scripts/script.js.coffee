@@ -17,21 +17,56 @@ class Model extends Spine.Model
 
 class Site extends Model
 	@configure('Site',
-		'id', 'name', 'url', 'token'
+		'id', 'name', 'url', 'token', 'filecollections', 'files'
 	)
-
 	@extend Spine.Model.Local
+
+	destroy: ->
+		for item in @filecollections
+			item.destroy()
+		for item in @files
+			item.destroy()
+		super
+
+	fetchCollections: (params={}, options={}) ->
+		options.url = "#{@url}/restapi/_collections/?securityToken=#{@token}"
+		debugger
+		result = FileCollection.fetch(params, options)
+
+		return result
+
+class FileCollection extends Model
+	@configure('FileCollection',
+		'id', 'name', 'files', 'site')
+	@extend Spine.Model.Ajax
+
+	@fromJSON: (response) ->
+		unless response
+			return []
+		if response.success is false
+			alert response.message
+			return []
+
+		if Spine.isArray(response.data)
+			result =
+				for data in response.data
+					new @(data)
+		else
+			result = new @(response.data)
+
+		return result
+
+	fetchFiles: (params={}, options={}) ->
+		options.url = "#{@url}/restapi/#{@name}/?additionalFields=source&securityToken=#{@token}"
+		debugger
+		return File.fetch(params, options).done ->
+			debugger
 
 class File extends Model
 	@configure('File',
-		'id'
-		'meta'
-		'attrs'
+		'id', 'meta', 'attrs', 'site'
 	)
-
 	@extend Spine.Model.Ajax
-
-	@url: "#{siteUrl}/restapi/documents/?additionalFields=source&securityToken=#{siteToken}"
 
 	@fromJSON: (response) ->
 		unless response
@@ -353,7 +388,7 @@ class App extends Controller
 			# No file
 			else
 				# Fetch all the files for the collection
-				File.fetch()
+				site.fetchCollections()
 
 				# Apply
 				@setAppMode('site')
