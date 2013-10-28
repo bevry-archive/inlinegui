@@ -156,3 +156,7 @@
   }
 
 }).call(this);
+
+/*
+//@ sourceMappingURL=manager.map
+*/

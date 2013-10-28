@@ -49,13 +49,13 @@ docpadConfig = {
 				'/vendor/modernizr.js'
 				'/vendor/jquery.js'
 
-				'/vendor/spine/spine.js'
-				'/vendor/spine/ajax.js'
-				'/vendor/spine/local.js'
-				'/vendor/spine/list.js'
-				'/vendor/spine/manager.js'
-				'/vendor/spine/relation.js'
-				'/vendor/spine/route.js'
+				'/vendor/spine/lib/spine.js'
+				'/vendor/spine/lib/ajax.js'
+				'/vendor/spine/lib/local.js'
+				'/vendor/spine/lib/list.js'
+				'/vendor/spine/lib/manager.js'
+				'/vendor/spine/lib/relation.js'
+				'/vendor/spine/lib/route.js'
 
 				'/vendor/codemirror/codemirror.js'
 
