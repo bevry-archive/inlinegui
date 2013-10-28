@@ -1,8 +1,12 @@
 # Inline GUI/CMS for any backend!
 
-[![Gittip donate button](http://badgr.co/gittip/bevry.png)](https://www.gittip.com/bevry/ "Donate weekly to this project using Gittip")
-[![Flattr donate button](https://raw.github.com/balupton/flattr-buttons/master/badge-89x18.gif)](http://flattr.com/thing/344188/balupton-on-Flattr "Donate monthly to this project using Flattr")
-[![PayPayl donate button](https://www.paypalobjects.com/en_AU/i/btn/btn_donate_SM.gif)](https://www.paypal.com/au/cgi-bin/webscr?cmd=_flow&SESSION=IHj3DG3oy_N9A9ZDIUnPksOi59v0i-EWDTunfmDrmU38Tuohg_xQTx0xcjq&dispatch=5885d80a13c0db1f8e263663d3faee8d14f86393d55a810282b64afed84968ec "Donate once-off to this project using Paypal")
+<!-- BADGES/ -->
+
+
+
+
+<!-- /BADGES -->
+
 
 An Inline GUI/CMS for any backend! Currently supports for the following backends:
 
@@ -39,18 +43,53 @@ npm install; npm install -g coffee-script docpad
 docpad run
 ```
 
+<!-- HISTORY/ -->
 
 ## History
-[You can discover the history inside the `History.md` file](https://github.com/bevry/docpad-plugin-inlinegui/blob/master/History.md#files)
+[Discover the change history by heading on over to the `History.md` file.](https://github.com/webwrite/inlinegui/blob/master/History.md#files)
 
+<!-- /HISTORY -->
+
+
+<!-- BACKERS/ -->
+
+## Backers
+
+### Maintainers
+
+These amazing people are maintaining this project:
+
+- Neil Taylor <neil.t@myplanetdigital.com> (https://github.com/neilbaylorrulez)
+- Benjamin Lupton <b@lupton.cc> (https://github.com/balupton)
+
+### Sponsors
+
+No sponsors yet! Will you be the first?
+
+
+
+### Contributors
+
+These amazing people have contributed code to this project:
+
+- Benjamin Lupton <b@lupton.cc> (https://github.com/balupton) - [view contributions](https://github.com/webwrite/inlinegui/commits?author=balupton)
+- ginader (https://github.com/ginader) - [view contributions](https://github.com/webwrite/inlinegui/commits?author=ginader)
+- Lisa Hong <lisa.h@myplanetdigital.com> (https://github.com/lisaej) - [view contributions](https://github.com/webwrite/inlinegui/commits?author=lisaej)
+- Neil Taylor <neil.t@myplanetdigital.com> (https://github.com/neilbaylorrulez) - [view contributions](https://github.com/webwrite/inlinegui/commits?author=neilbaylorrulez)
+
+[Become a contributor!](https://github.com/webwrite/inlinegui/blob/master/Contributing.md#files)
+
+<!-- /BACKERS -->
+
+
+<!-- LICENSE/ -->
 
 ## License
-Licensed under the incredibly [permissive](http://en.wikipedia.org/wiki/Permissive_free_software_licence) [MIT License](http://creativecommons.org/licenses/MIT/)
-<br/>Copyright &copy; 2013+ [Myplanet Internet Solutions Ltd.](http://www.myplanetdigital.com/) <hello@myplanetdigital.com>
+
+Licensed under the incredibly [permissive](http://en.wikipedia.org/wiki/Permissive_free_software_licence) [MIT license](https://github.com/webwrite/inlinegui/blob/master/LICENSE.md#readme)
+
+Copyright &copy; Myplanet Internet Solutions Ltd. <hello@myplanetdigital.com> (http://www.myplanetdigital.com/)
+
+<!-- /LICENSE -->
 
 
-## Contributors
-
-- [Neil Taylor](https://github.com/neilbaylorrulez) gruntwork
-- [Lisa Hong](https://github.com/lisaej) design
-- [Benjamin Lupton](http://balupton.com) implementation

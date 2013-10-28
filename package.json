@@ -1,9 +1,9 @@
 {
-  "name": "docpad-plugin-inlinegui",
+  "name": "inlinegui",
   "version": "0.1.0",
   "private": true,
   "description": "An inline GUI/CMS for DocPad",
-  "homepage": "https://github.com/docpad/docpad-plugin-inlinegui",
+  "homepage": "https://github.com/webwrite/inlinegui",
   "keywords": [
     "docpad-plugin",
     "docpad",
@@ -18,20 +18,21 @@
     "Benjamin Lupton <b@lupton.cc> (https://github.com/balupton)"
   ],
   "contributors": [
-    "Neil Taylor <neil.t@myplanetdigital.com> (https://github.com/neilbaylorrulez)",
+    "Benjamin Lupton <b@lupton.cc> (https://github.com/balupton)",
+    "ginader (https://github.com/ginader)",
     "Lisa Hong <lisa.h@myplanetdigital.com> (https://github.com/lisaej)",
-    "Benjamin Lupton <b@lupton.cc> (http://balupton.com)"
+    "Neil Taylor <neil.t@myplanetdigital.com> (https://github.com/neilbaylorrulez)"
   ],
   "bugs": {
-    "url": "https://github.com/docpad/docpad-plugin-inlinegui/issues"
+    "url": "https://github.com/webwrite/inlinegui/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/docpad/docpad-plugin-inlinegui.git"
+    "url": "https://github.com/webwrite/inlinegui.git"
   },
   "license": {
     "type": "MIT",
-    "url": "https://github.com/docpad/docpad-plugin-inlinegui/blob/master/LICENSE.md#readme"
+    "url": "https://github.com/webwrite/inlinegui/blob/master/LICENSE.md#readme"
   },
   "engines": {
     "node": ">=0.8",

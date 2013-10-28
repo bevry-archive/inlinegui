@@ -1,8 +1,31 @@
 wait = (delay,fn) -> setTimeout(fn,delay)
-siteUrl = "http://localhost:9778"
-siteToken = "blah"
-Spine.Model.host = siteUrl
 
+Spine.Model.Ajax =
+	extended: ->
+		@change @saveAjax
+		@fetch @loadAjax
+
+	performAjax: (opts={}, next) ->
+		$.queue 'ajax', ->
+			opts.method ?= 'GET'
+			opts.url = (@get('url') or ::url .replace(':id', @get('id'))
+			opts.data ?= JSON.stringify(@)
+			opts.success = (data, textStatus, xhr) ->
+				return next(null, data)
+			opts.error = (xhr, textStatus, err) ->
+				return next(err)
+			$.ajax(opts)
+
+	saveAjax: (opts={}, next) ->
+		opts.method ?= if @isNew() then 'PUT' else 'POST'
+		@performAjax, (err, data) =>
+			return next(err)  if err
+			@parseJSON(data)
+
+	loadAjax: (opts={}, next) ->
+		@performAjax opts, (err, data) =>
+			return next(err)  if err
+			@parseJSON(data)
 
 # =====================================
 # Models
@@ -17,7 +40,7 @@ class Model extends Spine.Model
 
 class Site extends Model
 	@configure('Site',
-		'id', 'name', 'url', 'token', 'filecollections', 'files'
+		'id', 'name', 'url', 'token', 'fileCollections', 'files'
 	)
 	@extend Spine.Model.Local
 
@@ -28,7 +51,15 @@ class Site extends Model
 			item.destroy()
 		super
 
-	fetchCollections: (params={}, options={}) ->
+	get: (key) ->
+		value = @[key]
+		value or= []  if key is 'fileCollections'
+		return value
+
+	fetchCollection: (id, next) ->
+		this.get('filecollections')
+
+
 		options.url = "#{@url}/restapi/_collections/?securityToken=#{@token}"
 		debugger
 		result = FileCollection.fetch(params, options)
@@ -229,15 +260,15 @@ class App extends Controller
 		super
 
 		# Sites
-		Site.bind('save',    @updateSite)
-		Site.bind('destroy', @destroySite)
-		Site.bind('refresh', @updateSites)
+		Site.bind('save',     @updateSite)
+		Site.bind('destroy',  @destroySite)
+		Site.bind('refresh',  @updateSites)
 		Site.fetch()
 
 		# Files
-		File.bind('save',    @updateFile)
-		File.bind('destroy', @destroyFile)
-		File.bind('refresh', @updateFiles)
+		File.bind('save',     @updateFile)
+		File.bind('destroy',  @destroyFile)
+		File.bind('refresh',  @updateFiles)
 		# @todo figure out how to release/destroy files
 
 		# Apply
@@ -323,90 +354,106 @@ class App extends Controller
 		# Prepare
 		opts ?= {}
 		{site, collection, file, navigate} = opts
-		site ?= null
-		collection ?= 'database'
-		file ?= null
 		navigate ?= true
 
 		# Log
 		console.log 'openApp', {site, collection, file, navigate}
 
-		# Fetch
-		if site and (typeof site is 'object') is false
-			site = Site.find(site)
-
-		# Reset
+		# Apply
 		@currentSite = site
-		@currentCollection = collection
+		@currentCollection = collection or 'database'
 		@currentFile = file
 
-		# Site
-		if site
-			# File
-			if file
-				# Delete the old edit view
-				if @editView?
-					@editView.release()
-					@editView = null
-
-				# Prepare
-				{$el, $toggleMeta, $links, $linkPage, $toggles, $togglePreview} = @
-				title = file.get('title') or file.get('filename')
-
-				# View
-				@editView = editView = new FileEditItem({item:file})
-				editView.render()
-
-				# Apply
-				$linkPage.text(title)
-
-				# Bars
-				$toggles.removeClass('active')
-
-				$togglePreview.addClass('active')
-				editView.$previewbar.show()
-
-				editView.$sourcebar.hide()
-				###
-				if $target.hasClass('button-edit')
-					$toggleMeta.addClass('active')
-					editView.$metabar.show()
-				else
-					editView.$metabar.hide()
-				###
-
-				# View
-				editView.appendTo($el)
-				@onWindowResize()
-
-				# Apply
-				@setAppMode('page')
-
-				# Navigate to file
-				@navigate('/site/'+site.get('id')+'/'+collection+'/'+file.get('relativePath'))  if navigate
-
-			# No file
-			else
-				# Fetch all the files for the collection
-				site.fetchCollections()
-
-				# Apply
-				@setAppMode('site')
-
-				# Navigate to site default collection
-				@navigate('/site/'+site.get('id')+'/'+collection)  if navigate
-
-		# No site
-		else
+		# No Site
+		unless @currentSite
 			# Apply
 			@setAppMode('admin')
 
 			# Navigate to admin
 			@navigate('/')  if navigate
 
+			# Done
+			return @
+
+		# Site
+		Site.fetch @currentSite, (err, @currentSite) =>
+			# Handle problems
+			throw err  if err
+			throw new Error('could not find site')  unless @currentSite
+
+			# Collection
+			# There will always be a collection, as we force it earlier
+			@currentSite.fetchCollection @currentCollection, (err, @currentCollection) =>
+				# Handle problems
+				throw err  if err
+				throw new Error('could not find collection')  unless @currentCollection
+
+				# No File
+				unless @currentFile
+					# Apply
+					@setAppMode('site')
+
+					# Navigate to site default collection
+					@navigate('/site/'+@currentSite.get('id')+'/'+@currentCollection.get('id'))  if navigate
+
+					# Done
+					return @
+
+				# File
+				@currentCollection.fetchFile @currentFile, (err, @currentFile) =>
+					# Handle problems
+					throw err  if err
+					throw new Error('could not find file')  unless @currentFile
+
+					# Delete the old edit view
+					if @editView?
+						@editView.release()
+						@editView = null
+
+					# Prepare
+					{$el, $toggleMeta, $links, $linkPage, $toggles, $togglePreview} = @
+					title = @currentFile.get('title') or @currentFile.get('filename')
+
+					# View
+					@editView = editView = new FileEditItem({
+						item: @currentFile
+					})
+					editView.render()
+
+					# Apply
+					$linkPage.text(title)
+
+					# Bars
+					$toggles.removeClass('active')
+
+					$togglePreview.addClass('active')
+					editView.$previewbar.show()
+
+					editView.$sourcebar.hide()
+					###
+					if $target.hasClass('button-edit')
+						$toggleMeta.addClass('active')
+						editView.$metabar.show()
+					else
+						editView.$metabar.hide()
+					###
+
+					# View
+					editView.appendTo($el)
+					@onWindowResize()
+
+					# Apply
+					@setAppMode('page')
+
+					# Navigate to file
+					@navigate('/site/'+@currentSite.get('id')+'/'+@currentCollection.get('id')+'/'+@currentFile.get('relativePath'))  if navigate
+
 		# Chain
 		@
 
+	# A user has logged in successfully
+	# so apply the logged in user to our application
+	# by saving the user to local storage and taking them to the admin
 	loginUser: (email) ->
 		return @  unless email
 
@@ -499,10 +546,14 @@ class App extends Controller
 	# ---------------------------------
 	# Events
 
+	# A "add new website" button was clicked
+	# Show the new website modal
 	clickAddSite: (e) =>
 		@$('.site-add.modal').show()
 		@
 
+	# The website modal's save button was clicked
+	# So save our changes to the website
 	submitSite: (e) =>
 		# Disable click through
 		e.preventDefault()
@@ -531,6 +582,8 @@ class App extends Controller
 		# Chain
 		@
 
+	# The website modal's cancel button was clicked
+	# So cancel the editing to our website
 	submitSiteCancel: (e) =>
 		# Disable click through
 		e.preventDefault()
@@ -542,9 +595,13 @@ class App extends Controller
 		# Chain
 		@
 
+	# Handle login button
+	# Send the request off to persona to start the login process
+	# Receives the result via our `onMessage` handler
 	clickLogin: (e) =>
 		navigator.id.request()
 
+	# Handle menu effects
 	clickMenuButton: (e) =>
 		# Prepare
 		{$loadbar} = @
@@ -565,6 +622,7 @@ class App extends Controller
 		# Chain
 		@
 
+	# Handle menu effects
 	clickMenuToggle: (e) =>
 		# Prepare
 		$target = $(e.currentTarget)
@@ -585,6 +643,7 @@ class App extends Controller
 		# Chain
 		@
 
+	# Handle menu links
 	clickMenuLink: (e) =>
 		# Prepare
 		$target = $(e.currentTarget)
@@ -602,6 +661,7 @@ class App extends Controller
 		# Chain
 		@
 
+	# Start viewing a site when it is clicked
 	clickSite: (e) =>
 		# Disable click through
 		e.preventDefault()
@@ -626,6 +686,7 @@ class App extends Controller
 		# Chain
 		@
 
+	# Start viewing a file when it is clicked
 	clickFile: (e) =>
 		# Disable click through
 		e.preventDefault()
@@ -646,6 +707,7 @@ class App extends Controller
 		# Chain
 		@
 
+	# Resize our application when the user resizes their browser
 	onWindowResize: =>
 		# Prepare
 		$window = $(window)
@@ -659,6 +721,9 @@ class App extends Controller
 		# Chain
 		@
 
+	# Receives messages from external sources, such as:
+	# - the child frame for contenteditable
+	# - the persona window for login
 	onMessage: (event) =>
 		# Extract
 		data = event.originalEvent?.data or event.data or {}

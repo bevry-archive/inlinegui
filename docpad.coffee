@@ -48,6 +48,7 @@ docpadConfig = {
 				'/vendor/log.js'
 				'/vendor/modernizr.js'
 				'/vendor/jquery.js'
+				'/vendor/superagent.js'
 
 				'/vendor/spine/lib/spine.js'
 				'/vendor/spine/lib/ajax.js'
