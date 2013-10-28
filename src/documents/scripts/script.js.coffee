@@ -1,145 +1,196 @@
+# Inline GUI
+
+## Helpers
+
+# CoffeeScript friendly setTimeout function
+
 wait = (delay,fn) -> setTimeout(fn,delay)
 
-Spine.Model.Ajax =
-	extended: ->
-		@change @saveAjax
-		@fetch @loadAjax
 
-	performAjax: (opts={}, next) ->
-		$.queue 'ajax', ->
-			opts.method ?= 'GET'
-			opts.url = (@get('url') or ::url .replace(':id', @get('id'))
-			opts.data ?= JSON.stringify(@)
-			opts.success = (data, textStatus, xhr) ->
-				return next(null, data)
-			opts.error = (xhr, textStatus, err) ->
-				return next(err)
-			$.ajax(opts)
+## Models
 
-	saveAjax: (opts={}, next) ->
-		opts.method ?= if @isNew() then 'PUT' else 'POST'
-		@performAjax, (err, data) =>
-			return next(err)  if err
-			@parseJSON(data)
+# Define the Base Model that uses Backbone.js
 
-	loadAjax: (opts={}, next) ->
-		@performAjax opts, (err, data) =>
-			return next(err)  if err
-			@parseJSON(data)
+class Model extends Backbone.Model
 
-# =====================================
-# Models
+# Define the Base Collection that uses QueryEngine.
+# QueryEngine adds NoSQL querying abilities to our collections
 
-class Model extends Spine.Model
-	get: (key) ->
-		return @[key]
+class Collection extends QueryEngine.QueryCollection
 
-	set: (key, value) ->
-		@[key] = value
+	fetchItem: (id, next) ->
+		result = @collection.get(id)
+		return result  if result
+		@collection.fetch(
+			success: (collection, response, opts) ->
+				result = collection.get(id)
+				console.log(collection, response, opts)
+				return next(null, result)
+
+			error: (collection, response, opts) ->
+				result = collection.get(id)
+				console.log(collection, response, opts)
+				return next(null, result)
+		)
 		@
 
-class Site extends Model
-	@configure('Site',
-		'id', 'name', 'url', 'token', 'fileCollections', 'files'
-	)
-	@extend Spine.Model.Local
+# Define the Site Model that will go inside our Sites Collection
 
-	destroy: ->
-		for item in @filecollections
-			item.destroy()
-		for item in @files
-			item.destroy()
+class Site extends Model
+	@collection: new (Collection.extend(
+		localStorage: new Backbone.LocalStorage('inlinegui-sites')
+		model: Site
+	))
+
+	defaults:
+		name: null
+		url: null
+		token: null
+		fileCollections: null  # Collection of FileCollection Models
+		files: null  # FileCollection Model
+
+	url: ->
+		site = @
+		siteUrl = site.get('url')
+		siteToken = site.get('token')
+		return "#{siteUrl}/restapi/?additionalFields=source&securityToken=#{siteToken}"
+
+	parse: (response, opts) ->
+		# Prepare
+		site = @
+
+		# Parse the response
+		data = JSON.stringify(response).data
+
+		# Add the site to each site collection
+		for collection in data.collections
+			collection.site = site
+
+		# Add the site collections to the global collection
+		FileCollection.collection.add(data.collections)
+
+		# Add the site to each site file
+		for file in data.files
+			file.site = @
+
+		# Add the site files to the global collection
+		File.collection.add(data.files)
+
+		# Chain
+		@
+
+	initialize: ->
 		super
 
-	get: (key) ->
-		value = @[key]
-		value or= []  if key is 'fileCollections'
-		return value
+		# Apply id
+		@id ?= @cid
 
-	fetchCollection: (id, next) ->
-		this.get('filecollections')
+		# Create a live updating collection inside of us of all the FileCollection Models that are for our site
+		@attributes.fileCollections ?= FileCollection.collection.createLiveChildCollection(
+			site: @
+		)
 
+		# Create a live updating collection inside of us of all the File Models that are for our site
+		@attributes.files ?= File.collection.createLiveChildCollection(
+			site: @
+		)
 
-		options.url = "#{@url}/restapi/_collections/?securityToken=#{@token}"
-		debugger
-		result = FileCollection.fetch(params, options)
-
-		return result
+		# Chain
+		@
 
 class FileCollection extends Model
-	@configure('FileCollection',
-		'id', 'name', 'files', 'site')
-	@extend Spine.Model.Ajax
+	@collection: new (Collection.extend(
+		model: FileCollection
+	))
 
-	@fromJSON: (response) ->
-		unless response
-			return []
-		if response.success is false
-			alert response.message
-			return []
+	defaults:
+		name: null
+		ids: null  # Array of file paths matching this query
+		files: null  # A live updating collection of files within this collection
+		site: null  # The model of the site this is for
 
-		if Spine.isArray(response.data)
-			result =
-				for data in response.data
-					new @(data)
-		else
-			result = new @(response.data)
+	url: ->
+		site = @get.get('site')
+		siteUrl = site.get('url')
+		siteToken = site.get('token')
+		collectionName = @get('name')
+		return "#{siteUrl}/restapi/collection/#{collectionName}/?securityToken=#{siteToken}"
 
-		return result
+	initialize: ->
+		super
 
-	fetchFiles: (params={}, options={}) ->
-		options.url = "#{@url}/restapi/#{@name}/?additionalFields=source&securityToken=#{@token}"
-		debugger
-		return File.fetch(params, options).done ->
-			debugger
+		# Apply id
+		@id ?= @cid
+
+		# Create a live updating collection inside of us of all the File Models that are for our site and colleciton
+		@attributes.files ?= File.collection.createLiveChildCollection(
+			__site: @get('site').cid
+			relativePath: $in: @get('ids')
+		)
+
+		@attributes.files ?= FileCollection.collection.createLiveChildCollection(
+			_site: @get('site').cid
+			_collections: $has: @get('name')
+		)
+
+		# Chain
+		@
 
 class File extends Model
-	@configure('File',
-		'id', 'meta', 'attrs', 'site'
-	)
-	@extend Spine.Model.Ajax
+	@collection: new (Collection.extend(
+		model: File
+	))
 
-	@fromJSON: (response) ->
-		unless response
-			return []
-		if response.success is false
-			alert response.message
-			return []
-
-		adjust = (data) ->
-			meta = data.meta
-			delete data.meta
-			id = data.id
-			delete data.id
-			attrs = data
-			result = {id, meta, attrs}
-			return result
-
-		if Spine.isArray(response.data)
-			result =
-				for data in response.data
-					new @(adjust data)
-		else
-			result = new @(adjust response.data)
-
-		return result
+	default:
+		meta: null
+		filename: null
+		relativePath: null
+		url: null
+		urls: null
+		contentType: null
+		encoding: null
+		content: null
+		contentRendered: null
+		source: null
+		site: null  # The model of the site this is for
 
 	get: (key) ->
-		value = @meta[key] ? @attrs[key] ? null
+		value = super('meta')?[key] ? super(key)
 		return value
 
-	set: (key,value) ->
-		console.log 'not supported yet'
-		return @
+	url: ->
+		site = @get.get('site')
+		siteUrl = site.get('url')
+		siteToken = site.get('token')
+		fileName = @get('relativePath')
+		return "#{siteUrl}/restapi/file/#{fileName}/?securityToken=#{siteToken}"
+
+	parse: (response, opts) ->
+		# Parse the response
+		data = JSON.stringify(response).data
+
+		# Apply the received data to the model
+		@set(data)
+
+		# Chain
+		@
+
+	initialize: ->
+		super
+
+		# Apply id
+		@id ?= @cid
+
+		# Chain
+		@
 
 
-# =====================================
-# Controllers
+## Controllers/Views
 
 class Controller extends Spine.Controller
 	destroy: ->
 		@release()
-		@item?.destroy()
+		# @item?.destroy()
 		@
 
 class FileEditItem extends Controller
@@ -160,12 +211,12 @@ class FileEditItem extends Controller
 
 		# Apply
 		$el
-			.addClass('file-edit-item-'+item.id)
+			.addClass('file-edit-item-'+item.cid)
 			.data('item', item)
 			.data('controller', @)
-		$title.val  item.get('title') or item.get('filename') or ''
-		$date.val   item.get('date')?.toISOString()
-		$source.val item.get('source')
+		$title.val   item.get('title') or item.get('filename') or ''
+		$date.val    item.get('date')?.toISOString()
+		$source.val  item.get('source')
 		$previewbar.attr('src': siteUrl+item.get('url'))
 		# @todo figure out why file.url doesn't work
 
@@ -191,12 +242,12 @@ class FileListItem extends Controller
 
 		# Apply
 		$el
-			.addClass('file-list-item-'+item.id)
+			.addClass('file-list-item-'+item.cid)
 			.data('item', item)
 			.data('controller', @)
 		$title.text  item.get('title') or item.get('filename') or ''
 		$tags.text  (item.get('tags') or []).join(', ') or ''
-		$date.text  item.get('date')?.toLocaleDateString() or ''
+		$date.text   item.get('date')?.toLocaleDateString() or ''
 
 		# Chain
 		@
@@ -213,7 +264,7 @@ class SiteListItem extends Controller
 
 		# Apply
 		$el
-			.addClass('site-list-item-'+item.id)
+			.addClass('site-list-item-'+item.cid)
 			.data('item', item)
 			.data('controller', @)
 		$name.text item.get('name') or item.get('url') or ''
@@ -252,24 +303,24 @@ class App extends Controller
 	routes:
 		'/': 'routeApp'
 		'/site/:siteId/': 'routeApp'
-		'/site/:siteId/:collectionId': 'routeApp'
-		'/site/:siteId/:collectionId/*filePath': 'routeApp'
+		'/site/:siteId/:fileCollectionId': 'routeApp'
+		'/site/:siteId/:fileCollectionId/*filePath': 'routeApp'
 
 	constructor: ->
 		# Super
 		super
 
 		# Sites
-		Site.bind('save',     @updateSite)
-		Site.bind('destroy',  @destroySite)
-		Site.bind('refresh',  @updateSites)
-		Site.fetch()
+		Site.collection.bind('add',      @updateSite)
+		Site.collection.bind('remove',   @destroySite)
+		Site.collection.bind('reset',    @updateSites)
+		Site.collection.fetch()
 
 		# Files
-		File.bind('save',     @updateFile)
-		File.bind('destroy',  @destroyFile)
-		File.bind('refresh',  @updateFiles)
-		# @todo figure out how to release/destroy files
+		File.collection.bind('add',      @updateFile)
+		File.collection.bind('remove',   @destroyFile)
+		File.collection.bind('reset',    @updateFiles)
+		# @todo move this into a way where only files for the current site are added
 
 		# Apply
 		@onWindowResize()
@@ -307,27 +358,21 @@ class App extends Controller
 
 	routeApp: (opts) ->
 		# Prepare
-		{siteId, collectionId, filePath} = opts
+		{siteId, fileCollectionId, filePath} = opts
 
 		# Has file
 		if filePath
-			files = File.all().filter (file) ->
-				return file.get('relativePath') is filePath
-
-			if files.length is 1
-				@openApp({
-					site: siteId
-					collection: collectionId
-					file: files[0]
-				})
-			else
-				console.log('error')
+			@openApp({
+				site: siteId
+				fileCollection: fileCollectionId
+				file: filePath
+			})
 
 		# Otherwise
 		else
 			@openApp({
 				site: siteId
-				collection: collectionId
+				fileCollection: fileCollectionId
 			})
 
 		# Chain
@@ -340,7 +385,7 @@ class App extends Controller
 	mode: null
 	editView: null
 	currentSite: null
-	currentCollection: null
+	currentFileCollection: null
 	currentFile: null
 
 	setAppMode: (mode) ->
@@ -350,19 +395,17 @@ class App extends Controller
 			.addClass('app-'+mode)
 		@
 
-	openApp: (opts) ->
+	openApp: (opts={}) ->
 		# Prepare
 		opts ?= {}
-		{site, collection, file, navigate} = opts
-		navigate ?= true
 
 		# Log
-		console.log 'openApp', {site, collection, file, navigate}
+		console.log 'openApp', opts
 
 		# Apply
-		@currentSite = site
-		@currentCollection = collection or 'database'
-		@currentFile = file
+		@currentSite = opts.site or null
+		@currentFileCollection = opts.fileCollection or 'database'
+		@currentFile = opts.file or null
 
 		# No Site
 		unless @currentSite
@@ -376,17 +419,17 @@ class App extends Controller
 			return @
 
 		# Site
-		Site.fetch @currentSite, (err, @currentSite) =>
+		Site.collection.fetchItem @currentSite, (err, @currentSite) =>
 			# Handle problems
 			throw err  if err
 			throw new Error('could not find site')  unless @currentSite
 
 			# Collection
 			# There will always be a collection, as we force it earlier
-			@currentSite.fetchCollection @currentCollection, (err, @currentCollection) =>
+			@currentSite.get('fileCollections').fetchItem @currentFileCollection, (err, @currentFileCollection) =>
 				# Handle problems
 				throw err  if err
-				throw new Error('could not find collection')  unless @currentCollection
+				throw new Error('could not find collection')  unless @currentFileCollection
 
 				# No File
 				unless @currentFile
@@ -394,13 +437,13 @@ class App extends Controller
 					@setAppMode('site')
 
 					# Navigate to site default collection
-					@navigate('/site/'+@currentSite.get('id')+'/'+@currentCollection.get('id'))  if navigate
+					@navigate('/site/'+@currentSite.id+'/'+@currentFileCollection.id)  if navigate
 
 					# Done
 					return @
 
 				# File
-				@currentCollection.fetchFile @currentFile, (err, @currentFile) =>
+				@currentFileCollection.get('files').fetchFile @currentFile, (err, @currentFile) =>
 					# Handle problems
 					throw err  if err
 					throw new Error('could not find file')  unless @currentFile
@@ -446,7 +489,7 @@ class App extends Controller
 					@setAppMode('page')
 
 					# Navigate to file
-					@navigate('/site/'+@currentSite.get('id')+'/'+@currentCollection.get('id')+'/'+@currentFile.get('relativePath'))  if navigate
+					@navigate('/site/'+@currentSite.id+'/'+@currentCollection.id+'/'+@currentFile.id)  if navigate
 
 		# Chain
 		@
@@ -571,7 +614,7 @@ class App extends Controller
 
 		# Create
 		if url and name
-			site = Site.create({url, token, name})
+			site = Site.collection.add({url, token, name})
 			site.save()
 		else
 			alert 'need more site data'

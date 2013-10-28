@@ -48,14 +48,13 @@ docpadConfig = {
 				'/vendor/log.js'
 				'/vendor/modernizr.js'
 				'/vendor/jquery.js'
-				'/vendor/superagent.js'
+
+				'/vendor/underscore.js'
+				'/vendor/backbone.js'
+				'/vendor/backbone.localStorage.js'
+				'/vendor/query-engine.js'
 
 				'/vendor/spine/lib/spine.js'
-				'/vendor/spine/lib/ajax.js'
-				'/vendor/spine/lib/local.js'
-				'/vendor/spine/lib/list.js'
-				'/vendor/spine/lib/manager.js'
-				'/vendor/spine/lib/relation.js'
 				'/vendor/spine/lib/route.js'
 
 				'/vendor/codemirror/codemirror.js'
