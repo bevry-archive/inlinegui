@@ -46,7 +46,7 @@ class Site extends Model
 		name: null
 		url: null
 		token: null
-		fileCollections: null  # Collection of FileCollection Models
+		customFileCollections: null  # Collection of CustomFileCollection Models
 		files: null  # FileCollection Model
 
 	url: ->
@@ -63,11 +63,11 @@ class Site extends Model
 		data = JSON.stringify(response).data
 
 		# Add the site to each site collection
-		for collection in data.collections
+		for collection in data.customFileCollections
 			collection.site = site
 
-		# Add the site collections to the global collection
-		FileCollection.collection.add(data.collections)
+		# Add the site custom file collections to the global collection
+		CustomFileCollection.collection.add(data.customFileCollections)
 
 		# Add the site to each site file
 		for file in data.files
@@ -86,7 +86,7 @@ class Site extends Model
 		@id ?= @cid
 
 		# Create a live updating collection inside of us of all the FileCollection Models that are for our site
-		@attributes.fileCollections ?= FileCollection.collection.createLiveChildCollection(
+		@attributes.customFileCollections ?= CustomFileCollection.collection.createLiveChildCollection(
 			site: @
 		)
 
@@ -98,14 +98,14 @@ class Site extends Model
 		# Chain
 		@
 
-class FileCollection extends Model
+class CustomFileCollection extends Model
 	@collection: new (Collection.extend(
-		model: FileCollection
+		model: CustomFileCollection
 	))
 
 	defaults:
-		name: null
-		ids: null  # Array of file paths matching this query
+		id: null
+		relativePaths: null  # Array of the relative paths for each file in this collection
 		files: null  # A live updating collection of files within this collection
 		site: null  # The model of the site this is for
 
@@ -124,13 +124,8 @@ class FileCollection extends Model
 
 		# Create a live updating collection inside of us of all the File Models that are for our site and colleciton
 		@attributes.files ?= File.collection.createLiveChildCollection(
-			__site: @get('site').cid
-			relativePath: $in: @get('ids')
-		)
-
-		@attributes.files ?= FileCollection.collection.createLiveChildCollection(
-			_site: @get('site').cid
-			_collections: $has: @get('name')
+			site: @get('site')
+			relativePath: $in: @get('relativePaths')
 		)
 
 		# Chain
@@ -139,6 +134,42 @@ class FileCollection extends Model
 class File extends Model
 	@collection: new (Collection.extend(
 		model: File
+		filesIndexedByRelativePath: null
+
+		onFileAdd: (file) =>
+			relativePath = file.get('relativePath')
+
+			if relativePath
+				@filesIndexedByRelativePath[relativePath] = file
+
+			@
+
+		onFileChange: (file, value) =>
+			previousRelativePath = file.previous('relativePath')
+			if previousRelativePath
+				delete @filesIndexedByRelativePath[]
+
+			relativePath = file.get('relativePath')
+			if relativePath
+				@filesIndexedByRelativePath[file.get('relativePath')] = file
+
+			@
+
+		onFileRemove: (file) =>
+			relativePath = file.get('relativePath')
+			if relativePath
+				delete @filesIndexedByRelativePath[relativePath]
+			@
+
+		initialize: ->
+			super
+			@on('add', @onFileAdd)
+			@on('change:relativePath', @onFileChange)
+			@on('remove', @onFileRemove)
+			@
+
+		getFileByRelativePath: (relativePath) ->
+			return @filesIndexedByRelativePath[relativePath]
 	))
 
 	default:
@@ -395,6 +426,8 @@ class App extends Controller
 			.addClass('app-'+mode)
 		@
 
+	# @TODO
+	# This needs to be rewrote to use sockets or something
 	openApp: (opts={}) ->
 		# Prepare
 		opts ?= {}
