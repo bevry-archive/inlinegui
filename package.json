@@ -54,6 +54,6 @@
   },
   "main": "node_modules/docpad/bin/docpad-server",
   "scripts": {
-    "start": "node ./node_modules/docpad/bin/docpad-server run --port 9779"
+    "start": "node ./node_modules/docpad/bin/docpad run --port 9779"
   }
 }
