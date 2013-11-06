@@ -38,7 +38,7 @@
     "npm": ">=1.2"
   },
   "dependencies": {
-    "docpad": "~6.54.1",
+    "docpad": "~6.54.4",
     "docpad-plugin-coffeescript": "~2.2.2",
     "docpad-plugin-eco": "~2.0.2",
     "docpad-plugin-marked": "~2.1.1",
@@ -52,5 +52,8 @@
   "devDependencies": {
     "docpad-plugin-livereload": "~2.5.3"
   },
-  "main": "node_modules/docpad/bin/docpad-server"
+  "main": "node_modules/docpad/bin/docpad-server",
+  "scripts": {
+    "start": "node ./node_modules/docpad/bin/docpad-server run --port 9779"
+  }
 }
