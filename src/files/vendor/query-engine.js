@@ -1658,6 +1658,7 @@
   if (typeof module !== "undefined" && module !== null) {
     module.exports = queryEngine;
   } else {
+    this.QueryEngine = queryEngine;
     this.queryEngine = queryEngine;
   }
 
