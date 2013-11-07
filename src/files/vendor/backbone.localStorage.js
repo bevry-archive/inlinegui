@@ -61,7 +61,7 @@ _.extend(Backbone.LocalStorage.prototype, {
       model.id = guid();
       model.set(model.idAttribute, model.id);
     }
-    this.localStorage().setItem(this.name+"-"+model.id, JSON.stringify(model));
+    this.localStorage().setItem(this.name+"-"+model.id, JSON.stringify(model.toJSON()));
     this.records.push(model.id.toString());
     this.save();
     return this.find(model);
@@ -69,7 +69,7 @@ _.extend(Backbone.LocalStorage.prototype, {
 
   // Update a model by replacing its copy in `this.data`.
   update: function(model) {
-    this.localStorage().setItem(this.name+"-"+model.id, JSON.stringify(model));
+    this.localStorage().setItem(this.name+"-"+model.id, JSON.stringify(model.toJSON()));
     if (!_.include(this.records, model.id.toString()))
       this.records.push(model.id.toString()); this.save();
     return this.find(model);

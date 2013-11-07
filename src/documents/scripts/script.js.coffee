@@ -12,7 +12,6 @@ wait = (delay,fn) -> setTimeout(fn,delay)
 # Define the Base Model that uses Backbone.js
 
 class Model extends Backbone.Model
-	save: (args...) -> @sync(args...)
 
 
 # Define the Base Collection that uses QueryEngine.
@@ -51,6 +50,13 @@ class Site extends Model
 		customFileCollections: null  # Collection of CustomFileCollection Models
 		files: null  # FileCollection Model
 
+	toJSON: ->
+		exclude = ['customFileCollections', 'files']
+		result = super
+		for key in exclude
+			delete result[key]
+		return result
+
 	url: ->
 		site = @
 		siteUrl = site.get('url')
@@ -62,7 +68,13 @@ class Site extends Model
 		site = @
 
 		# Parse the response
-		data = JSON.stringify(response).data
+		data = response
+		data = JSON.stringify(response)  if typeof response is 'string'
+		data = data.data  if data.data?
+
+		# Ensure
+		data.files ?= []
+		data.customFileCollections ?= []
 
 		# Add the site to each site collection
 		for collection in data.customFileCollections
@@ -78,14 +90,11 @@ class Site extends Model
 		# Add the site files to the global collection
 		File.collection.add(data.files)
 
-		# Chain
-		@
+		# Return the data
+		return data
 
 	initialize: ->
 		super
-
-		# Apply id
-		@id ?= @cid
 
 		# Create a live updating collection inside of us of all the FileCollection Models that are for our site
 		@attributes.customFileCollections ?= CustomFileCollection.collection.createLiveChildCollection(
@@ -111,6 +120,13 @@ class CustomFileCollection extends Model
 		files: null  # A live updating collection of files within this collection
 		site: null  # The model of the site this is for
 
+	toJSON: ->
+		exclude = ['files', 'site']
+		result = super
+		for key in exclude
+			delete result[key]
+		return result
+
 	url: ->
 		site = @get.get('site')
 		siteUrl = site.get('url')
@@ -120,9 +136,6 @@ class CustomFileCollection extends Model
 
 	initialize: ->
 		super
-
-		# Apply id
-		@id ?= @cid
 
 		# Create a live updating collection inside of us of all the File Models that are for our site and colleciton
 		@attributes.files ?= File.collection.createLiveChildCollection(
@@ -186,6 +199,13 @@ class File extends Model
 		contentRendered: null
 		source: null
 		site: null  # The model of the site this is for
+
+	toJSON: ->
+		exclude = ['site']
+		result = super
+		for key in exclude
+			delete result[key]
+		return result
 
 	get: (key) ->
 		value = super('meta')?[key] ? super(key)
@@ -472,7 +492,7 @@ class App extends Controller
 					@setAppMode('site')
 
 					# Navigate to site default collection
-					@navigate('/site/'+@currentSite.id+'/'+@currentFileCollection.id)  if navigate
+					@navigate('/site/'+@currentSite.cid+'/'+@currentFileCollection.cid)  if navigate
 
 					# Done
 					return @
@@ -524,7 +544,7 @@ class App extends Controller
 					@setAppMode('page')
 
 					# Navigate to file
-					@navigate('/site/'+@currentSite.id+'/'+@currentCollection.id+'/'+@currentFile.id)  if navigate
+					@navigate('/site/'+@currentSite.cid+'/'+@currentCollection.cid+'/'+@currentFile.cid)  if navigate
 
 		# Chain
 		@
@@ -580,7 +600,7 @@ class App extends Controller
 
 
 	findFile: (item) =>
-		controller = $(".file-list-item-#{item.id}:first").data('controller')
+		controller = $(".file-list-item-#{item.cid}:first").data('controller')
 		return controller
 
 	destroyFile: (item) =>
@@ -601,7 +621,7 @@ class App extends Controller
 
 
 	findSite: (item) =>
-		controller = $(".site-list-item-#{item.id}:first").data('controller')
+		controller = $(".site-list-item-#{item.cid}:first").data('controller')
 		return controller
 
 	destroySite: (item) =>
@@ -649,8 +669,7 @@ class App extends Controller
 
 		# Create
 		if url and name
-			site = Site.collection.add({url, token, name})
-			site.save()
+			site = Site.collection.create({url, token, name})
 		else
 			alert 'need more site data'
 
