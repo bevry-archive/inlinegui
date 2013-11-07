@@ -12,6 +12,8 @@ wait = (delay,fn) -> setTimeout(fn,delay)
 # Define the Base Model that uses Backbone.js
 
 class Model extends Backbone.Model
+	save: (args...) -> @sync(args...)
+
 
 # Define the Base Collection that uses QueryEngine.
 # QueryEngine adds NoSQL querying abilities to our collections
