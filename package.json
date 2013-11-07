@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "docpad": "~6.54.5",
-    "docpad-plugin-coffeescript": "~2.2.2",
+    "docpad-plugin-coffeescript": "~2.2.3",
     "docpad-plugin-eco": "~2.0.2",
     "docpad-plugin-marked": "~2.1.2",
     "docpad-plugin-partials": "~2.8.1",

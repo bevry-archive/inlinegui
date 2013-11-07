@@ -37,10 +37,10 @@ class Collection extends QueryEngine.QueryCollection
 # Define the Site Model that will go inside our Sites Collection
 
 class Site extends Model
-	@collection: new (Collection.extend(
+	@collection: new (Collection.extend
 		localStorage: new Backbone.LocalStorage('inlinegui-sites')
 		model: Site
-	))
+	)
 
 	defaults:
 		name: null
@@ -99,9 +99,9 @@ class Site extends Model
 		@
 
 class CustomFileCollection extends Model
-	@collection: new (Collection.extend(
+	@collection: new (Collection.extend
 		model: CustomFileCollection
-	))
+	)
 
 	defaults:
 		id: null
@@ -132,7 +132,7 @@ class CustomFileCollection extends Model
 		@
 
 class File extends Model
-	@collection: new (Collection.extend(
+	@collection: new (Collection.extend
 		model: File
 		filesIndexedByRelativePath: null
 
@@ -147,7 +147,7 @@ class File extends Model
 		onFileChange: (file, value) =>
 			previousRelativePath = file.previous('relativePath')
 			if previousRelativePath
-				delete @filesIndexedByRelativePath[]
+				delete @filesIndexedByRelativePath[previousRelativePath]
 
 			relativePath = file.get('relativePath')
 			if relativePath
@@ -170,7 +170,7 @@ class File extends Model
 
 		getFileByRelativePath: (relativePath) ->
 			return @filesIndexedByRelativePath[relativePath]
-	))
+	)
 
 	default:
 		meta: null
