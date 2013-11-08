@@ -345,31 +345,34 @@ class Controller extends Spine.Controller
 		@
 
 class FileEditItem extends Controller
-	el: $('.pageeditbar').remove().first().prop('outerHTML')
+	el: $('.page-edit').remove().first().prop('outerHTML')
 
 	elements:
 		'.field-title  :input': '$title'
 		'.field-date   :input': '$date'
 		'.field-author :input': '$author'
-		'.file-source': '$source'
-		'.pagepreviewbar': '$previewbar'
-		'.source': '$sourcebar'
-		'.metabar': '$metabar'
+		'.field-source': '$source'
+		'.page-preview': '$previewbar'
+		'.page-source':  '$sourcebar'
+		'.page-meta':    '$metabar'
 
 	render: =>
 		# Prepare
 		{item, $el, $title, $date, $author, $previewbar, $source} = @
-		siteUrl = item.get('site').get('url')
+		title   = item.get('title') or item.get('filename') or ''
+		date    = item.get('date')?.toISOString()
+		source  = item.get('source')
+		url     = item.get('site').get('url')+item.get('url')
 
 		# Apply
 		$el
 			.addClass('file-edit-item-'+item.cid)
 			.data('item', item)
 			.data('controller', @)
-		$title.val   item.get('title') or item.get('filename') or ''
-		$date.val    item.get('date')?.toISOString()
-		$source.val  item.get('source')
-		$previewbar.attr('src': siteUrl+item.get('url'))
+		$title.val(title)
+		$date.val(date)
+		$source.val(source)
+		$previewbar.attr('src': url)
 		# @todo figure out why file.url doesn't work
 
 		# Editor
