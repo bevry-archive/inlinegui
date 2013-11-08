@@ -26,7 +26,9 @@ class Model extends Backbone.Model
 class Collection extends QueryEngine.QueryCollection
 	collection: Collection
 
-	fetchItem: (opts={}) ->
+	fetchItem: (opts={}, next) ->
+		opts.next ?= next  if next
+
 		result = @get(opts.id)
 		return safe(opts.next, null, result)  if result
 
@@ -48,7 +50,9 @@ class Site extends Model
 		customFileCollections: null  # Collection of CustomFileCollection Models
 		files: null  # FileCollection Model
 
-	fetch: (opts={}) ->
+	fetch:  (opts={}, next) ->
+		opts.next ?= next  if next
+
 		console.log 'model fetch', opts
 
 		site = @
@@ -73,7 +77,8 @@ class Site extends Model
 
 		@
 
-	sync: (opts={}) ->
+	sync: (opts={}, next) ->
+		opts.next ?= next  if next
 		console.log 'model sync', opts
 		Site.collection.sync(opts)
 		@
@@ -139,7 +144,9 @@ class Sites extends Collection
 	model: Site
 	collection: Sites
 
-	fetch: (opts) ->
+	fetch: (opts={}, next) ->
+		opts.next ?= next  if next
+
 		console.log 'collection fetch', opts
 		sites = JSON.parse(localStorage.getItem('sites') or 'null') or []
 		for site,index in sites
@@ -149,7 +156,9 @@ class Sites extends Collection
 		safe(opts.next, null, @)
 		@
 
-	sync: (opts) ->
+	sync: (opts={}, next) ->
+		opts.next ?= next  if next
+
 		console.log 'collection sync', opts
 		sites = JSON.stringify(@toJSON())
 		localStorage.setItem('sites', sites)
@@ -220,7 +229,9 @@ class File extends Model
 		source: null
 		site: null  # The model of the site this is for
 
-	sync: (opts={}) ->
+	sync: (opts={}, next) ->
+		opts.next ?= next  if next
+
 		console.log 'file sync', opts
 
 		file = @
@@ -229,10 +240,12 @@ class File extends Model
 		siteUrl = site.get('url')
 		siteToken = site.get('token')
 
-		requestData = _.pick(file.toJSON(), ['title'])
-		method = if @isNew() then 'put' else 'post'
+		if opts.method isnt 'delete'
+			opts.data ?= _.pick(file.toJSON(), ['title'])
+		opts.method ?= if @isNew() then 'put' else 'post'
+		opts.url ?= "#{siteUrl}/restapi/collection/database/#{fileRelativePath}?securityToken=#{siteToken}"
 
-		app.request method: method, url: "#{siteUrl}/restapi/collection/database/#{fileRelativePath}?securityToken=#{siteToken}", data: requestData, next: (err, data) =>
+		app.request opts, (err, data) =>
 			return safe(opts.next, err)  if err
 
 			@parse(data)
@@ -362,7 +375,9 @@ class FileEditItem extends Controller
 		# Chain
 		@
 
-	cancel: (opts={}) =>
+	cancel: (opts={}, next) ->
+		opts.next ?= next  if next
+
 		# Prepare
 		{item} = @
 
@@ -372,7 +387,9 @@ class FileEditItem extends Controller
 		# Chain
 		@
 
-	save: (opts={}) =>
+	save: (opts={}, next) ->
+		opts.next ?= next  if next
+
 		# Prepare
 		{item, $el, $title, $date, $author, $previewbar, $source} = @
 		title = $title.val()
@@ -842,7 +859,9 @@ class App extends Controller
 		@
 
 	# Request
-	request: (opts) ->
+	request: (opts={}, next) ->
+		opts.next ?= next  if next
+
 		@$loadbar
 			.removeClass('put post get delete')
 			.addClass('active')
@@ -957,12 +976,21 @@ class App extends Controller
 		$row = $target.parents('.content-row:first')
 		item = $row.data('item')
 
-		# Open the file
-		@openApp({
-			site: @currentSite
-			fileCollection: @currentFileCollection
-			file: item
-		})
+		# Action
+		if $target.parents().andSelf().filter('.button-delete').length is 1
+			$row.fadeOut(5*1000)
+			item.sync method: 'delete', next: (err) ->
+				if err
+					$row.show()
+					throw err
+				$row.remove()
+		else
+			# Open the file
+			@openApp({
+				site: @currentSite
+				fileCollection: @currentFileCollection
+				file: item
+			})
 
 		# Chain
 		@
