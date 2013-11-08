@@ -362,6 +362,16 @@ class FileEditItem extends Controller
 		# Chain
 		@
 
+	cancel: (opts={}) =>
+		# Prepare
+		{item} = @
+
+		# Sync
+		item.sync(opts)
+
+		# Chain
+		@
+
 	save: (opts={}) =>
 		# Prepare
 		{item, $el, $title, $date, $author, $previewbar, $source} = @
@@ -805,25 +815,28 @@ class App extends Controller
 
 		# Apply
 		if $loadbar.hasClass('active') is false or $loadbar.data('for') is target
-			###
-			$target
-				.addClass('active')
-				.siblings('.button')
-					.addClass('disabled')
-			###
-
-			# Save
-			if $target.hasClass('button-save')
+			activate = =>
 				$target
 					.addClass('active')
 					.siblings('.button')
 						.addClass('disabled')
+			deactivate = =>
+				$target
+					.removeClass('active')
+					.siblings('.button')
+						.removeClass('disabled')
 
+			# Cancel
+			if $target.hasClass('button-cancel')
+				activate()
+				@editView.cancel next: ->
+					deactivate()
+
+			# Save
+			else if $target.hasClass('button-save')
+				activate()
 				@editView.save next: ->
-					$target
-						.removeClass('active')
-						.siblings('.button')
-							.removeClass('disabled')
+					deactivate()
 
 		# Chain
 		@
