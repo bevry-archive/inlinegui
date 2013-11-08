@@ -366,6 +366,7 @@ class FileEditItem extends Controller
 	render: =>
 		# Prepare
 		{item, $el, $title, $date, $author, $previewbar, $source} = @
+		siteUrl = item.get('site').get('url')
 
 		# Apply
 		$el
@@ -558,6 +559,7 @@ class App extends Controller
 	openApp: (opts={}) ->
 		# Prepare
 		opts ?= {}
+		opts.navigate ?= true
 
 		# Log
 		console.log 'openApp', opts
@@ -573,7 +575,7 @@ class App extends Controller
 			@setAppMode('admin')
 
 			# Navigate to admin
-			@navigate('/')  if navigate
+			@navigate('/')  if otps.navigate
 
 			# Done
 			return @
@@ -597,13 +599,13 @@ class App extends Controller
 					@setAppMode('site')
 
 					# Navigate to site default collection
-					@navigate('/site/'+@currentSite.cid+'/'+@currentFileCollection.cid)  if navigate
+					@navigate('/site/'+@currentSite.cid+'/'+@currentFileCollection.cid)  if opts.navigate
 
 					# Done
 					return @
 
 				# File
-				Files.collection.fetchFile @currentFile, (err, @currentFile) =>
+				File.collection.fetchItem @currentFile, (err, @currentFile) =>
 					# Handle problems
 					throw err  if err
 					throw new Error('could not find file')  unless @currentFile
@@ -649,7 +651,7 @@ class App extends Controller
 					@setAppMode('page')
 
 					# Navigate to file
-					@navigate('/site/'+@currentSite.cid+'/'+@currentCollection.cid+'/'+@currentFile.cid)  if navigate
+					@navigate('/site/'+@currentSite.cid+'/'+@currentFileCollection.cid+'/'+@currentFile.cid)  if opts.navigate
 
 		# Chain
 		@
@@ -857,7 +859,7 @@ class App extends Controller
 			when $target.hasClass('link-site')
 				@openApp({
 					site: @currentSite
-					collection: @currentCollection
+					fileCollection: @currentFileCollection
 				})
 
 		# Chain
@@ -902,7 +904,7 @@ class App extends Controller
 		# Open the file
 		@openApp({
 			site: @currentSite
-			collection: @currentCollection
+			fileCollection: @currentFileCollection
 			file: item
 		})
 
