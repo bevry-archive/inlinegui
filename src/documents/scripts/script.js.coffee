@@ -50,11 +50,14 @@ class Model extends Backbone.Model
 
 class Collection extends QueryEngine.QueryCollection
 	collection: Collection
+
 	fetchItem: (id, next) ->
 		debugger
-		result = @collection.get(id)
-		return result  if result
-		@collection.fetch(
+
+		result = @get(id)
+		return next(null, result)  if result
+
+		@fetch(
 			success: (collection, response, opts) ->
 				result = collection.get(id)
 				console.log(collection, response, opts)
@@ -65,7 +68,7 @@ class Collection extends QueryEngine.QueryCollection
 				console.log(collection, response, opts)
 				return next(null, result)
 		)
-		@
+
 
 # -------------------------------------
 # Site
@@ -583,7 +586,7 @@ class App extends Controller
 
 			# Collection
 			# There will always be a collection, as we force it earlier
-			@currentSite.get('fileCollections').fetchItem @currentFileCollection, (err, @currentFileCollection) =>
+			CustomFileCollection.collection.fetchItem @currentFileCollection, (err, @currentFileCollection) =>
 				# Handle problems
 				throw err  if err
 				throw new Error('could not find collection')  unless @currentFileCollection
@@ -600,7 +603,7 @@ class App extends Controller
 					return @
 
 				# File
-				@currentFileCollection.get('files').fetchFile @currentFile, (err, @currentFile) =>
+				Files.collection.fetchFile @currentFile, (err, @currentFile) =>
 					# Handle problems
 					throw err  if err
 					throw new Error('could not find file')  unless @currentFile
