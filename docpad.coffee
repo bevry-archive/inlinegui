@@ -51,7 +51,6 @@ docpadConfig = {
 
 				'/vendor/underscore.js'
 				'/vendor/backbone.js'
-				'/vendor/backbone.localStorage.js'
 				'/vendor/query-engine.js'
 
 				'/vendor/spine/lib/spine.js'
@@ -123,6 +122,13 @@ docpadConfig = {
 			latestConfig = docpad.getConfig()
 			oldUrls = latestConfig.templateData.site.oldUrls or []
 			newUrl = latestConfig.templateData.site.url
+
+			# CORS
+			opts.server.use (req,res,next) ->
+				res.header('Access-Control-Allow-Origin', '*');
+				res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+				res.header('Access-Control-Allow-Headers', 'Content-Type,X-Requested-With');
+				return next()
 
 			# Redirect any requests accessing one of our sites oldUrls to the new site url
 			opts.server.use (req,res,next) ->

@@ -1,12 +1,43 @@
 # Inline GUI
 
+# =====================================
 ## Helpers
 
 # CoffeeScript friendly setTimeout function
 
 wait = (delay,fn) -> setTimeout(fn,delay)
 
+# Async Friendly Ajax function
 
+request = (url, requestData, next) ->
+	requestData ?= {}
+	jQuery.ajax(
+		url: url
+		data: requestData
+		dataType: 'json'
+		cache: false
+		success: (data, textStatus, jqXHR) =>
+			# Parse the response
+			data = JSON.parse(data)  if typeof data is 'string'
+
+			# Are we actually an error
+			if data.success is false
+				err = new Error(data.message or 'An error occured with the request')
+				return next(err)
+
+			# Extract the data
+			data = data.data  if data.data?
+
+			# Forward
+			return next(null, data)
+
+		error: (jqXHR, textStatus, errorThrown) =>
+			# Forward
+			return next(errorThrown, null)
+	)
+
+
+# =====================================
 ## Models
 
 # Define the Base Model that uses Backbone.js
@@ -18,8 +49,9 @@ class Model extends Backbone.Model
 # QueryEngine adds NoSQL querying abilities to our collections
 
 class Collection extends QueryEngine.QueryCollection
-
+	collection: Collection
 	fetchItem: (id, next) ->
+		debugger
 		result = @collection.get(id)
 		return result  if result
 		@collection.fetch(
@@ -35,14 +67,11 @@ class Collection extends QueryEngine.QueryCollection
 		)
 		@
 
-# Define the Site Model that will go inside our Sites Collection
+# -------------------------------------
+# Site
 
+# Model
 class Site extends Model
-	@collection: new (Collection.extend
-		localStorage: new Backbone.LocalStorage('inlinegui-sites')
-		model: Site
-	)
-
 	defaults:
 		name: null
 		url: null
@@ -50,18 +79,41 @@ class Site extends Model
 		customFileCollections: null  # Collection of CustomFileCollection Models
 		files: null  # FileCollection Model
 
+	fetch: (args...) ->
+		console.log 'model fetch', args
+
+		site = @
+		siteUrl = site.get('url')
+		siteToken = site.get('token')
+
+		requestData = {}
+		requestData.securityToken = siteToken
+
+		result = {}
+
+		request "#{siteUrl}/restapi/collections/", requestData, (err, data) =>
+			throw err  if err
+			result.customFileCollections = data
+
+			request "#{siteUrl}/restapi/files/", requestData, (err, data) =>
+				throw err  if err
+				result.files = data
+
+				@parse(result)
+
+		@
+
+	sync: (args...) ->
+		console.log 'model sync', args
+		Site.collection.sync()
+		@
+
 	toJSON: ->
 		exclude = ['customFileCollections', 'files']
 		result = super
 		for key in exclude
 			delete result[key]
 		return result
-
-	url: ->
-		site = @
-		siteUrl = site.get('url')
-		siteToken = site.get('token')
-		return "#{siteUrl}/restapi/?additionalFields=source&securityToken=#{siteToken}"
 
 	parse: (response, opts) ->
 		# Prepare
@@ -72,23 +124,27 @@ class Site extends Model
 		data = JSON.stringify(response)  if typeof response is 'string'
 		data = data.data  if data.data?
 
-		# Ensure
-		data.files ?= []
-		data.customFileCollections ?= []
+		if Array.isArray(data.customFileCollections)
+			# Add the site to each site collection
+			for collection in data.customFileCollections
+				collection.site = site
 
-		# Add the site to each site collection
-		for collection in data.customFileCollections
-			collection.site = site
+			# Add the site custom file collections to the global collection
+			CustomFileCollection.collection.add(data.customFileCollections)
 
-		# Add the site custom file collections to the global collection
-		CustomFileCollection.collection.add(data.customFileCollections)
+			# Ensure it doesn't overwrite our live collection
+			delete data.customFileCollections
 
-		# Add the site to each site file
-		for file in data.files
-			file.site = @
+		if Array.isArray(data.files)
+			# Add the site to each site file
+			for file in data.files
+				file.site = @
 
-		# Add the site files to the global collection
-		File.collection.add(data.files)
+			# Add the site files to the global collection
+			File.collection.add(data.files)
+
+			# Ensure it doesn't overwrite our live collection
+			delete data.files
 
 		# Return the data
 		return data
@@ -106,14 +162,40 @@ class Site extends Model
 			site: @
 		)
 
+		# Fetch the latest from the server
+		# @fetch()
+
 		# Chain
 		@
 
-class CustomFileCollection extends Model
-	@collection: new (Collection.extend
-		model: CustomFileCollection
-	)
+# Collection
+class Sites extends Collection
+	model: Site
+	collection: Sites
 
+	fetch: (args...) ->
+		console.log 'collection fetch', args
+		sites = JSON.parse(localStorage.getItem('sites') or 'null') or []
+		for site,index in sites
+			sites[index] = new Site(site).fetch()
+		@add(sites)
+		@
+
+	sync: (args...) ->
+		console.log 'collection sync', args
+		sites = JSON.stringify(@toJSON())
+		localStorage.setItem('sites', sites)
+		@
+
+# Instantiate the global collection of sites
+Site.collection = new Sites()
+
+
+# -------------------------------------
+# Custom File Collections
+
+# Model
+class CustomFileCollection extends Model
 	defaults:
 		id: null
 		relativePaths: null  # Array of the relative paths for each file in this collection
@@ -146,47 +228,20 @@ class CustomFileCollection extends Model
 		# Chain
 		@
 
+# Collection
+class CustomFileCollections extends Collection
+	model: CustomFileCollection
+	collection: CustomFileCollections
+
+# Instantiate the global collection of custom file collections
+CustomFileCollection.collection = new CustomFileCollections()
+
+
+# -------------------------------------
+# Files
+
+# Model
 class File extends Model
-	@collection: new (Collection.extend
-		model: File
-		filesIndexedByRelativePath: null
-
-		onFileAdd: (file) =>
-			relativePath = file.get('relativePath')
-
-			if relativePath
-				@filesIndexedByRelativePath[relativePath] = file
-
-			@
-
-		onFileChange: (file, value) =>
-			previousRelativePath = file.previous('relativePath')
-			if previousRelativePath
-				delete @filesIndexedByRelativePath[previousRelativePath]
-
-			relativePath = file.get('relativePath')
-			if relativePath
-				@filesIndexedByRelativePath[file.get('relativePath')] = file
-
-			@
-
-		onFileRemove: (file) =>
-			relativePath = file.get('relativePath')
-			if relativePath
-				delete @filesIndexedByRelativePath[relativePath]
-			@
-
-		initialize: ->
-			super
-			@on('add', @onFileAdd)
-			@on('change:relativePath', @onFileChange)
-			@on('remove', @onFileRemove)
-			@
-
-		getFileByRelativePath: (relativePath) ->
-			return @filesIndexedByRelativePath[relativePath]
-	)
-
 	default:
 		meta: null
 		filename: null
@@ -237,7 +292,54 @@ class File extends Model
 		# Chain
 		@
 
+# Collection
+class Files extends Collection
+	model: File
+	collection: Files
 
+	filesIndexedByRelativePath: null
+
+	onFileAdd: (file) =>
+		relativePath = file.get('relativePath')
+
+		if relativePath
+			@filesIndexedByRelativePath[relativePath] = file
+
+		@
+
+	onFileChange: (file, value) =>
+		previousRelativePath = file.previous('relativePath')
+		if previousRelativePath
+			delete @filesIndexedByRelativePath[previousRelativePath]
+
+		relativePath = file.get('relativePath')
+		if relativePath
+			@filesIndexedByRelativePath[file.get('relativePath')] = file
+
+		@
+
+	onFileRemove: (file) =>
+		relativePath = file.get('relativePath')
+		if relativePath
+			delete @filesIndexedByRelativePath[relativePath]
+		@
+
+	initialize: ->
+		super
+		@filesIndexedByRelativePath ?= {}
+		@on('add', @onFileAdd)
+		@on('change:relativePath', @onFileChange)
+		@on('remove', @onFileRemove)
+		@
+
+	getFileByRelativePath: (relativePath) ->
+		return @filesIndexedByRelativePath[relativePath]
+
+# Instantiate the global collection of custom file collections
+File.collection = new Files()
+
+
+# =====================================
 ## Controllers/Views
 
 class Controller extends Spine.Controller
