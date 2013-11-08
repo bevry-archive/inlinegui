@@ -136,8 +136,8 @@ aside '.app', ->
 			header '.title', ->
 				'Page Source'
 
-			div '.body', ->
-				textarea '.file-source', ->
+			div '.body.field.field-source', ->
+				textarea ->
 
 		section '.page-meta.main', ->
 			header '.title', ->

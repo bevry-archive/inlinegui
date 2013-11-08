@@ -330,7 +330,7 @@ class FileEditItem extends Controller
 		'.field-title  :input': '$title'
 		'.field-date   :input': '$date'
 		'.field-author :input': '$author'
-		'.field-source': '$source'
+		'.page-source  :input': '$source'
 		'.page-preview': '$previewbar'
 		'.page-source':  '$sourcebar'
 		'.page-meta':    '$metabar'
@@ -355,9 +355,9 @@ class FileEditItem extends Controller
 		# @todo figure out why file.url doesn't work
 
 		# Editor
-		#@editor = CodeMirror.fromTextArea($source.get(0), {
-		#	mode: item.get('contentType')
-		#})
+		@editor = CodeMirror.fromTextArea($source.get(0), {
+			mode: item.get('contentType')
+		})
 
 		# Chain
 		@
@@ -835,7 +835,7 @@ class App extends Controller
 			.addClass('active')
 			.addClass(opts.method)
 
-		wait 2000, => \
+		wait 500, => \
 		jQuery.ajax(
 			url: opts.url
 			data: opts.data
@@ -885,6 +885,7 @@ class App extends Controller
 				@editView.$previewbar.toggle(toggle)
 			when $target.hasClass('toggle-source')
 				@editView.$sourcebar.toggle(toggle)
+				@editView.editor?.refresh()
 
 		# Chain
 		@
