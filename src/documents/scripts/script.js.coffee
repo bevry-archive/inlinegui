@@ -52,21 +52,14 @@ class Collection extends QueryEngine.QueryCollection
 	collection: Collection
 
 	fetchItem: (id, next) ->
-		debugger
-
 		result = @get(id)
 		return next(null, result)  if result
 
-		@fetch(
-			success: (collection, response, opts) ->
-				result = collection.get(id)
-				console.log(collection, response, opts)
-				return next(null, result)
-
-			error: (collection, response, opts) ->
-				result = collection.get(id)
-				console.log(collection, response, opts)
-				return next(null, result)
+		setTimeout(
+			=>
+				console.log "Couldn't fetch the item, trying again"
+				@fetchItem(id, next)
+			1000
 		)
 
 
