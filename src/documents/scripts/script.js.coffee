@@ -6,35 +6,10 @@
 # CoffeeScript friendly setTimeout function
 
 wait = (delay,fn) -> setTimeout(fn,delay)
-
-# Async Friendly Ajax function
-
-request = (url, requestData, next) ->
-	requestData ?= {}
-	jQuery.ajax(
-		url: url
-		data: requestData
-		dataType: 'json'
-		cache: false
-		success: (data, textStatus, jqXHR) =>
-			# Parse the response
-			data = JSON.parse(data)  if typeof data is 'string'
-
-			# Are we actually an error
-			if data.success is false
-				err = new Error(data.message or 'An error occured with the request')
-				return next(err)
-
-			# Extract the data
-			data = data.data  if data.data?
-
-			# Forward
-			return next(null, data)
-
-		error: (jqXHR, textStatus, errorThrown) =>
-			# Forward
-			return next(errorThrown, null)
-	)
+safe = (next, err, args...) ->
+	return next(err, args...)  if next
+	throw err  if err
+	return
 
 
 # =====================================
@@ -51,17 +26,15 @@ class Model extends Backbone.Model
 class Collection extends QueryEngine.QueryCollection
 	collection: Collection
 
-	fetchItem: (id, next) ->
-		result = @get(id)
-		return next(null, result)  if result
+	fetchItem: (opts={}) ->
+		result = @get(opts.id)
+		return safe(opts.next, null, result)  if result
 
-		setTimeout(
-			=>
-				console.log "Couldn't fetch the item, trying again"
-				@fetchItem(id, next)
-			1000
-		)
+		wait 1000, =>
+			console.log "Couldn't fetch the item, trying again"
+			@fetchItem(opts)
 
+		@
 
 # -------------------------------------
 # Site
@@ -75,43 +48,40 @@ class Site extends Model
 		customFileCollections: null  # Collection of CustomFileCollection Models
 		files: null  # FileCollection Model
 
-	fetch: (args...) ->
-		console.log 'model fetch', args
+	fetch: (opts={}) ->
+		console.log 'model fetch', opts
 
 		site = @
 		siteUrl = site.get('url')
 		siteToken = site.get('token')
 
-		requestData = {}
-		requestData.securityToken = siteToken
-
 		result = {}
 
-		request "#{siteUrl}/restapi/collections/", requestData, (err, data) =>
-			throw err  if err
+		app.request url: "#{siteUrl}/restapi/collections/?securityToken=#{siteToken}", next: (err, data) =>
+			return safe(opts.next, err)  if err
+
 			result.customFileCollections = data
 
-			request "#{siteUrl}/restapi/files/", requestData, (err, data) =>
-				throw err  if err
+			app.request url: "#{siteUrl}/restapi/files/?securityToken=#{siteToken}", next: (err, data) =>
+				return safe(opts.next, err)  if err
+
 				result.files = data
 
 				@parse(result)
 
+				safe(opts.next, null, @)
+
 		@
 
-	sync: (args...) ->
-		console.log 'model sync', args
-		Site.collection.sync()
+	sync: (opts={}) ->
+		console.log 'model sync', opts
+		Site.collection.sync(opts)
 		@
 
 	toJSON: ->
-		exclude = ['customFileCollections', 'files']
-		result = super
-		for key in exclude
-			delete result[key]
-		return result
+		return _.omit(super(), ['customFileCollections', 'files'])
 
-	parse: (response, opts) ->
+	parse: (response, opts={}) ->
 		# Prepare
 		site = @
 
@@ -169,18 +139,21 @@ class Sites extends Collection
 	model: Site
 	collection: Sites
 
-	fetch: (args...) ->
-		console.log 'collection fetch', args
+	fetch: (opts) ->
+		console.log 'collection fetch', opts
 		sites = JSON.parse(localStorage.getItem('sites') or 'null') or []
 		for site,index in sites
 			sites[index] = new Site(site).fetch()
+			# ^ TODO call the completion callback once all of these are done
 		@add(sites)
+		safe(opts.next, null, @)
 		@
 
-	sync: (args...) ->
-		console.log 'collection sync', args
+	sync: (opts) ->
+		console.log 'collection sync', opts
 		sites = JSON.stringify(@toJSON())
 		localStorage.setItem('sites', sites)
+		safe(opts.next, null, @)
 		@
 
 # Instantiate the global collection of sites
@@ -199,11 +172,7 @@ class CustomFileCollection extends Model
 		site: null  # The model of the site this is for
 
 	toJSON: ->
-		exclude = ['files', 'site']
-		result = super
-		for key in exclude
-			delete result[key]
-		return result
+		return _.omit(super(), ['files', 'site'])
 
 	url: ->
 		site = @get.get('site')
@@ -251,23 +220,33 @@ class File extends Model
 		source: null
 		site: null  # The model of the site this is for
 
+	sync: (opts={}) ->
+		console.log 'file sync', opts
+
+		file = @
+		fileRelativePath = file.get('relativePath')
+		site = file.get('site')
+		siteUrl = site.get('url')
+		siteToken = site.get('token')
+
+		requestData = _.pick(file.toJSON(), ['title'])
+		method = if @isNew() then 'put' else 'post'
+
+		app.request method: method, url: "#{siteUrl}/restapi/collection/database/#{fileRelativePath}?securityToken=#{siteToken}", data: requestData, next: (err, data) =>
+			return safe(opts.next, err)  if err
+
+			@parse(data)
+
+			safe(opts.next, null, @)
+
+		@
+
 	toJSON: ->
-		exclude = ['site']
-		result = super
-		for key in exclude
-			delete result[key]
-		return result
+		return _.omit(super(), ['site'])
 
 	get: (key) ->
 		value = super('meta')?[key] ? super(key)
 		return value
-
-	url: ->
-		site = @get.get('site')
-		siteUrl = site.get('url')
-		siteToken = site.get('token')
-		fileName = @get('relativePath')
-		return "#{siteUrl}/restapi/file/#{fileName}/?securityToken=#{siteToken}"
 
 	parse: (response, opts) ->
 		# Parse the response
@@ -383,6 +362,20 @@ class FileEditItem extends Controller
 		# Chain
 		@
 
+	save: (opts={}) =>
+		# Prepare
+		{item, $el, $title, $date, $author, $previewbar, $source} = @
+		title = $title.val()
+
+		# Apply
+		item.set({title})
+
+		# Sync
+		item.sync(opts)
+
+		# Chain
+		@
+
 class FileListItem extends Controller
 	el: $('.content-table.files .content-row:last').remove().first().prop('outerHTML')
 
@@ -469,7 +462,6 @@ class App extends Controller
 		Site.collection.bind('add',      @updateSite)
 		Site.collection.bind('remove',   @destroySite)
 		Site.collection.bind('reset',    @updateSites)
-		Site.collection.fetch()
 
 		# Files
 		File.collection.bind('add',      @updateFile)
@@ -498,11 +490,14 @@ class App extends Controller
 		# Login the user if we already have one
 		@loginUser(currentUser)  if currentUser
 
-		# Once loaded init routes and set us as ready
-		Spine.Route.setup()
+		# Fetch our site data
+		wait 0, =>
+			Site.collection.fetch next: =>
+				# Once loaded init routes and set us as ready
+				Spine.Route.setup()
 
-		# Set the app as ready
-		@$el.addClass('app-ready')
+				# Set the app as ready
+				@$el.addClass('app-ready')
 
 		# Chain
 		@
@@ -571,20 +566,20 @@ class App extends Controller
 			@setAppMode('admin')
 
 			# Navigate to admin
-			@navigate('/')  if otps.navigate
+			@navigate('/')  if opts.navigate
 
 			# Done
 			return @
 
 		# Site
-		Site.collection.fetchItem @currentSite, (err, @currentSite) =>
+		Site.collection.fetchItem id: @currentSite, next: (err, @currentSite) =>
 			# Handle problems
 			throw err  if err
 			throw new Error('could not find site')  unless @currentSite
 
 			# Collection
 			# There will always be a collection, as we force it earlier
-			CustomFileCollection.collection.fetchItem @currentFileCollection, (err, @currentFileCollection) =>
+			CustomFileCollection.collection.fetchItem id: @currentFileCollection, next: (err, @currentFileCollection) =>
 				# Handle problems
 				throw err  if err
 				throw new Error('could not find collection')  unless @currentFileCollection
@@ -601,7 +596,7 @@ class App extends Controller
 					return @
 
 				# File
-				File.collection.fetchItem @currentFile, (err, @currentFile) =>
+				File.collection.fetchItem id: @currentFile, next: (err, @currentFile) =>
 					# Handle problems
 					throw err  if err
 					throw new Error('could not find file')  unless @currentFile
@@ -810,17 +805,68 @@ class App extends Controller
 
 		# Apply
 		if $loadbar.hasClass('active') is false or $loadbar.data('for') is target
+			###
 			$target
-				.toggleClass('active')
+				.addClass('active')
 				.siblings('.button')
-					.toggleClass('disabled')
-			$loadbar
-				.toggleClass('active')
-				.toggleClass($target.data('loadclassname'))
-				.data('for', target)
+					.addClass('disabled')
+			###
+
+			# Save
+			if $target.hasClass('button-save')
+				$target
+					.addClass('active')
+					.siblings('.button')
+						.addClass('disabled')
+
+				@editView.save next: ->
+					$target
+						.removeClass('active')
+						.siblings('.button')
+							.removeClass('disabled')
 
 		# Chain
 		@
+
+	# Request
+	request: (opts) ->
+		@$loadbar
+			.removeClass('put post get delete')
+			.addClass('active')
+			.addClass(opts.method)
+
+		wait 2000, => \
+		jQuery.ajax(
+			url: opts.url
+			data: opts.data
+			dataType: 'json'
+			cache: false
+			type: (opts.method or 'get').toUpperCase()
+			success: (data, textStatus, jqXHR) =>
+				# Done
+				@$loadbar.removeClass('active')
+
+				# Parse the response
+				data = JSON.parse(data)  if typeof data is 'string'
+
+				# Are we actually an error
+				if data.success is false
+					err = new Error(data.message or 'An error occured with the request')
+					return safe(opts.next, err)
+
+				# Extract the data
+				data = data.data  if data.data?
+
+				# Forward
+				return safe(opts.next, null, data)
+
+			error: (jqXHR, textStatus, errorThrown) =>
+				# Done
+				@$loadbar.removeClass('active')
+
+				# Forward
+				return safe(opts.next, errorThrown, null)
+		)
 
 	# Handle menu effects
 	clickMenuToggle: (e) =>
