@@ -11,6 +11,9 @@ safe = (next, err, args...) ->
 	throw err  if err
 	return
 
+# Tasks
+{Task, TaskGroup} = window.TaskGroup
+
 
 # =====================================
 ## Models
@@ -156,11 +159,17 @@ class Sites extends Collection
 
 		console.log 'collection fetch', opts
 		sites = JSON.parse(localStorage.getItem('sites') or 'null') or []
-		for site,index in sites
-			sites[index] = new Site(site).fetch()
-			# ^ TODO call the completion callback once all of these are done
-		@add(sites)
-		safe(opts.next, null, @)
+
+		tasks = new TaskGroup concurrency: 0, next: (err) =>
+			@add(sites)
+			safe(opts.next, err, @)
+
+		sites.forEach (site, index) ->
+			tasks.addTask (complete) ->
+				sites[index] = new Site(site).fetch({}, complete)
+
+		tasks.run()
+
 		@
 
 	sync: (opts={}, next) ->
@@ -1034,7 +1043,8 @@ class App extends Controller
 	onMessage: (event) =>
 		# Extract
 		data = event.originalEvent?.data or event.data or {}
-		data = JSON.parse(data)  if typeof data is 'string'
+		try
+			data = JSON.parse(data)  if typeof data is 'string'
 
 		# Handle
 		switch true

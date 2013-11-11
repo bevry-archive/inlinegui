@@ -49,6 +49,8 @@ docpadConfig = {
 				'/vendor/modernizr.js'
 				'/vendor/jquery.js'
 
+				'/vendor/taskgroup.js'
+
 				'/vendor/underscore.js'
 				'/vendor/backbone.js'
 				'/vendor/query-engine.js'
