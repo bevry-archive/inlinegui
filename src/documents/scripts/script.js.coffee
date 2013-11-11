@@ -309,43 +309,9 @@ class Files extends Collection
 	model: File
 	collection: Files
 
-	filesIndexedByRelativePath: null
-
-	onFileAdd: (file) =>
-		relativePath = file.get('relativePath')
-
-		if relativePath
-			@filesIndexedByRelativePath[relativePath] = file
-
-		@
-
-	onFileChange: (file, value) =>
-		previousRelativePath = file.previous('relativePath')
-		if previousRelativePath
-			delete @filesIndexedByRelativePath[previousRelativePath]
-
-		relativePath = file.get('relativePath')
-		if relativePath
-			@filesIndexedByRelativePath[file.get('relativePath')] = file
-
-		@
-
-	onFileRemove: (file) =>
-		relativePath = file.get('relativePath')
-		if relativePath
-			delete @filesIndexedByRelativePath[relativePath]
-		@
-
-	initialize: ->
-		super
-		@filesIndexedByRelativePath ?= {}
-		@on('add', @onFileAdd)
-		@on('change:relativePath', @onFileChange)
-		@on('remove', @onFileRemove)
-		@
-
-	getFileByRelativePath: (relativePath) ->
-		return @filesIndexedByRelativePath[relativePath]
+	get: (id) ->
+		item = super or @findOne(relativePath: id)
+		return item
 
 # Instantiate the global collection of custom file collections
 File.collection = new Files([], {
