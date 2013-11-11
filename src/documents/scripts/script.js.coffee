@@ -134,14 +134,14 @@ class Site extends Model
 		super
 
 		# Create a live updating collection inside of us of all the FileCollection Models that are for our site
-		@attributes.customFileCollections ?= CustomFileCollection.collection.createLiveChildCollection(
+		@attributes.customFileCollections ?= CustomFileCollection.collection.createLiveChildCollection().setQuery('Site Limited',
 			site: @
-		)
+		).query()
 
 		# Create a live updating collection inside of us of all the File Models that are for our site
-		@attributes.files ?= File.collection.createLiveChildCollection(
+		@attributes.files ?= File.collection.createLiveChildCollection().setQuery('Site Limiter',
 			site: @
-		)
+		).query()
 
 		# Fetch the latest from the server
 		# @fetch()
@@ -222,7 +222,7 @@ class CustomFileCollection extends Model
 		@
 
 	updateQuery: ->
-		@attributes.files.setQuery('CustomFileCollection limiter',
+		@attributes.files.setQuery('CustomFileCollection Limiter',
 			site: @get('site')
 			relativePath: $in: @get('relativePaths')
 		).query()
@@ -518,12 +518,6 @@ class App extends Controller
 		Site.collection.bind('remove',   @destroySite)
 		Site.collection.bind('reset',    @updateSites)
 
-		# Files
-		File.collection.bind('add',      @updateFile)
-		File.collection.bind('remove',   @destroyFile)
-		File.collection.bind('reset',    @updateFiles)
-		# @todo move this into a way where only files for the current site are added
-
 		# Apply
 		@onWindowResize()
 		@setAppMode('login')
@@ -595,9 +589,15 @@ class App extends Controller
 
 	setAppMode: (mode) ->
 		@mode = mode
+
 		@$el
 			.removeClass('app-login app-admin app-site app-page')
 			.addClass('app-'+mode)
+
+		switch mode
+			when 'site'
+				@updateFiles(@currentSite.get('files'))
+
 		@
 
 	# @TODO
@@ -631,6 +631,9 @@ class App extends Controller
 			# Handle problems
 			throw err  if err
 			throw new Error('could not find site')  unless @currentSite
+
+			# Apply
+			@$linkSite.text(@currentSite.get('title') or @currentSite.get('name') or @currentSite.get('url'))
 
 			# Collection
 			# There will always be a collection, as we force it earlier
@@ -745,7 +748,7 @@ class App extends Controller
 
 		# update items we still have
 		controllers = []
-		for item in items
+		for item in (items.models or items or [])
 			controllers.push updateMethod(item)
 
 		# Return
@@ -1065,9 +1068,12 @@ class App extends Controller
 		# Chain
 		@
 
-window.app = app = new App(
+app = new App(
 	el: $('.app')
 )
 $(window)
 	.on('resize', app.onWindowResize.bind(app))
 	.on('message', app.onMessage.bind(app))
+
+window.debug = ->
+	debugger
