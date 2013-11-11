@@ -1230,6 +1230,12 @@
           return opts.modelValue === opts.selectorValue;
         }
       },
+      'model': {
+        test: function(opts) {
+          var _ref1, _ref2;
+          return (((_ref1 = opts.modelValue) != null ? _ref1.cid : void 0) || opts.modelValue) === (((_ref2 = opts.selectorValue) != null ? _ref2.cid : void 0) || opts.selectorValue);
+        }
+      },
       '$beginsWith': {
         test: function(opts) {
           var beginsWithParts, beginsWithValue, _i, _len;
@@ -1573,6 +1579,12 @@
           compiledSelectors.push(compiledSelector);
         } else if (util.isNull(selectorValue)) {
           compiledSelector = this.compileSelector('null', {
+            fieldName: fieldName,
+            selectorValue: selectorValue
+          });
+          compiledSelectors.push(compiledSelector);
+        } else if (selectorValue instanceof Backbone.Model) {
+          compiledSelector = this.compileSelector('model', {
             fieldName: fieldName,
             selectorValue: selectorValue
           });

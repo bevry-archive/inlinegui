@@ -136,7 +136,7 @@ aside '.app', ->
 			header '.title', ->
 				'Page Source'
 
-			div '.body.field.field-source', ->
+			div '.body', ->
 				textarea ->
 
 		section '.page-meta.main', ->
@@ -159,5 +159,11 @@ aside '.app', ->
 						'Author'
 					select ->
 						option -> 'Benjamin Lupton'
+
+				div '.field.field-layout', ->
+					label ->
+						'Layout'
+					select ->
+						option -> 'default'
 
 		iframe '.page-preview', ->

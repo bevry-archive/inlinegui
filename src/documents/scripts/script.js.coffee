@@ -29,6 +29,10 @@ class Collection extends QueryEngine.QueryCollection
 	fetchItem: (opts={}, next) ->
 		opts.next ?= next  if next
 
+		opts.id = opts.id?.id or opts.id?.cid or opts.id
+
+		console.log("Fetching", opts.id, "from", @options.name or @)
+
 		result = @get(opts.id)
 		return safe(opts.next, null, result)  if result
 
@@ -82,6 +86,9 @@ class Site extends Model
 		console.log 'model sync', opts
 		Site.collection.sync(opts)
 		@
+
+	getCollection: (name) ->
+		return @get('customFileCollections').findOne({name})?.get('files')
 
 	toJSON: ->
 		return _.omit(super(), ['customFileCollections', 'files'])
@@ -166,7 +173,9 @@ class Sites extends Collection
 		@
 
 # Instantiate the global collection of sites
-Site.collection = new Sites()
+Site.collection = new Sites([], {
+	name: 'Global Site Collection'
+})
 
 
 # -------------------------------------
@@ -175,7 +184,7 @@ Site.collection = new Sites()
 # Model
 class CustomFileCollection extends Model
 	defaults:
-		id: null
+		name: null
 		relativePaths: null  # Array of the relative paths for each file in this collection
 		files: null  # A live updating collection of files within this collection
 		site: null  # The model of the site this is for
@@ -194,21 +203,36 @@ class CustomFileCollection extends Model
 		super
 
 		# Create a live updating collection inside of us of all the File Models that are for our site and colleciton
-		@attributes.files ?= File.collection.createLiveChildCollection(
-			site: @get('site')
-			relativePath: $in: @get('relativePaths')
-		)
+		@attributes.files ?= File.collection.createLiveChildCollection()
+
+		# Update Query
+		@updateQuery()  if @attributes.relativePaths
+		@on('change:relativePaths', @updateQuery.bind(@))
 
 		# Chain
 		@
+
+	updateQuery: ->
+		@attributes.files.setQuery('CustomFileCollection limiter',
+			site: @get('site')
+			relativePath: $in: @get('relativePaths')
+		).query()
+		@
+
 
 # Collection
 class CustomFileCollections extends Collection
 	model: CustomFileCollection
 	collection: CustomFileCollections
 
+	get: (id) ->
+		item = super or @findOne(name: id)
+		return item
+
 # Instantiate the global collection of custom file collections
-CustomFileCollection.collection = new CustomFileCollections()
+CustomFileCollection.collection = new CustomFileCollections([], {
+	name: 'Global CustomFileCollection Collection'
+})
 
 
 # -------------------------------------
@@ -324,7 +348,9 @@ class Files extends Collection
 		return @filesIndexedByRelativePath[relativePath]
 
 # Instantiate the global collection of custom file collections
-File.collection = new Files()
+File.collection = new Files([], {
+	name: 'Global File Collection'
+})
 
 
 # =====================================
@@ -343,14 +369,32 @@ class FileEditItem extends Controller
 		'.field-title  :input': '$title'
 		'.field-date   :input': '$date'
 		'.field-author :input': '$author'
+		'.field-layout :input': '$layout'
 		'.page-source  :input': '$source'
 		'.page-preview': '$previewbar'
 		'.page-source':  '$sourcebar'
 		'.page-meta':    '$metabar'
 
+	getCollectionSelectValues: (collectionName) ->
+		{item} = @
+		selectValues = []
+		selectValues.push $ '<option>',
+			text: 'None'
+			value: ''
+		for model in item.get('site').getCollection(collectionName)?.models or []
+			selectValues.push $ '<option>',
+				text: model.get('title') or model.get('name') or model.get('relativePath')
+				value: model.get('relativePath')
+		return selectValues
+
+	getOtherSelectValues: (fieldName) ->
+		{item} = @
+		selectValues = _.uniq item.get('site').get('files').pluck(fieldName)
+		return selectValues
+
 	render: =>
 		# Prepare
-		{item, $el, $title, $date, $author, $previewbar, $source} = @
+		{item, $el, $title, $date, $layout, $author, $previewbar, $source} = @
 		title   = item.get('title') or item.get('filename') or ''
 		date    = item.get('date')?.toISOString()
 		source  = item.get('source')
@@ -364,6 +408,15 @@ class FileEditItem extends Controller
 		$title.val(title)
 		$date.val(date)
 		$source.val(source)
+
+		$author.empty().append(
+			@getCollectionSelectValues('authors').concat @getOtherSelectValues('author')
+		).val(item.get('author'))
+
+		$layout.empty().append(
+			@getCollectionSelectValues('layouts').concat @getOtherSelectValues('author')
+		).val(item.get('layout'))
+
 		$previewbar.attr('src': url)
 		# @todo figure out why file.url doesn't work
 
