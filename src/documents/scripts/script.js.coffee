@@ -616,6 +616,8 @@ class App extends Controller
 			when 'site'
 				@updateFiles(@currentFileCollection.get('files'))
 				@updateCollections(@currentSite.get('customFileCollections'))
+			when 'page'
+				wait 10, -> @resizePreviewBar()
 
 		@
 
@@ -1071,14 +1073,18 @@ class App extends Controller
 		@
 
 	# Resize our application when the user resizes their browser
-	onWindowResize: =>
+	onWindowResize: => @resizePreviewBar()
+
+	# Resize Preview Bar
+	resizePreviewBar: (height) =>
 		# Prepare
+		$previewbar = @editView?.$previewbar
 		$window = $(window)
-		$previewbar = @$el.find('.previewbar')
 
 		# Apply
-		$previewbar.css(
-			minHeight: $window.height() - (@$el.outerHeight() - $previewbar.height())
+		$previewbar?.height(height or 'auto')
+		$previewbar?.css(
+			minHeight: $window.height() - (@$el.outerHeight() - $previewbar.outerHeight())
 		)
 
 		# Chain
@@ -1097,10 +1103,7 @@ class App extends Controller
 		switch true
 			when data.action is 'resizeChild'
 				# Prepare
-				$previewbar = @$el.find('.previewbar')
-
-				# Apply
-				$previewbar.height(String(data.height)+'px')
+				@resizePreviewBar(data.height+'px')
 
 			when data.d?.assertion?
 				# Prepare
