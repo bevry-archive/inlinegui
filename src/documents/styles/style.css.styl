@@ -148,35 +148,21 @@ body
 
 .toggle
 .button
+.button-drop
 .link
 	text-transform: uppercase
 	cursor: pointer
 
-.button-add
 .button-drop
-	&
-	li:first-child .icon
-		headerButton()
-		padding: 0
+	cursor: default
 
+.button-list
+.button-drop
 	overflow: visible
 	display: inline-block
 	min-width: 120px
 
-	position: absolute  // take out of the flow so the LIs don't push outside elements around
-	top: 0
-	right: 0
-
-	color: rgba(255, 255, 255, 0.85)
-	font-family: fontFamilyHeader
-	font-weight: bold
-
-	border-top: 1px solid rgba(255, 255, 255, 0.2)
-	border-left: 1px solid rgba(255, 255, 255, 0.1)
-	border-bottom: 1px solid rgba(0, 0, 0, 0.1)
-	border-right: 1px solid rgba(0, 0, 0, 0.2)
-	border-radius: 5px
-	box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.35)
+	position: relative
 
 	li
 		display: none
@@ -193,12 +179,43 @@ body
 			text-align: center
 			width: 25px
 
-	li:hover
-		background: rgba(0, 0, 0, 0.05)
+select.collection-list
+	-webkit-appearance: inherit
+	background: transparent
+	border: none
+	color: inherit
+	font-weight: inherit
+	font-size: inherit
+	font-style: inherit
+	text-transform: inherit
+	-webkit-font-smoothing: inherit
+	display: inherit
 
 .button-drop
+	&
+	li:first-child .icon
+		headerButton()
+		padding: 0
+
 	// li:first-child .icon
 	//	border-left: 1px solid rgba(0, 0, 0, 0.25)
+	position: absolute  // take out of the flow so the LIs don't push outside elements around
+	top: 0
+	right: 0
+
+	color: rgba(255, 255, 255, 0.85)
+	font-family: fontFamilyHeader
+	font-weight: bold
+
+	border-top: 1px solid rgba(255, 255, 255, 0.2)
+	border-left: 1px solid rgba(255, 255, 255, 0.1)
+	border-bottom: 1px solid rgba(0, 0, 0, 0.1)
+	border-right: 1px solid rgba(0, 0, 0, 0.2)
+	border-radius: 5px
+	box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.35)
+
+	li:hover
+		background: rgba(0, 0, 0, 0.05)
 
 	&:hover
 		li
@@ -320,13 +337,13 @@ body
 .site-list
 	header
 		color: colorAdminBackground
-	.button-add
+	.button-drop
 		background: colorAdminBackground
 
 .page-list
 	.title
 		color: colorSiteBackground
-	.button-add
+	.button-drop
 		background: colorSiteBackground
 
 .page-edit

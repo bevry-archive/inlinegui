@@ -73,8 +73,8 @@ aside '.app', ->
 			span '.title', ->
 				'Sites'
 
-			ul '.button.button-add', ->
-				li '.button-add-site', ->
+			ul '.button.button-drop', ->
+				li '.button.button-add-site', ->
 					text 'Add Site'
 					span '.icon.icon-plus', ->
 
@@ -96,14 +96,17 @@ aside '.app', ->
 	section '.page-list.main.show-site', ->
 		header ->
 			span '.title', ->
-				'Database Listing'
+				select '.collection-list', ->
+					option -> 'Database'
+					option -> 'Documents'
+					option -> 'Layouts'
 
-			ul '.button.button-add.button-drop', ->
+			ul '.button-drop', ->
 				li ->
 					text 'Add new'
 					span '.icon.icon-plus', ->
-				li '.button-add-document', -> 'Document'
-				li '.button-add-upload', -> 'Upload'
+				li '.button.button-add-document', -> 'Document'
+				li '.button.button-add-upload', -> 'Upload'
 
 		div '.body', ->
 			div '.content-table.files', ->

@@ -91,7 +91,10 @@ class Site extends Model
 		@
 
 	getCollection: (name) ->
-		return @get('customFileCollections').findOne({name})?.get('files')
+		return @get('customFileCollections').findOne({name})
+
+	getCollectionFiles: (name) ->
+		return @getCollection(name)?.get('files')
 
 	toJSON: ->
 		return _.omit(super(), ['customFileCollections', 'files'])
@@ -356,7 +359,7 @@ class FileEditItem extends Controller
 		selectValues.push $ '<option>',
 			text: 'None'
 			value: ''
-		for model in item.get('site').getCollection(collectionName)?.models or []
+		for model in item.get('site').getCollectionFiles(collectionName)?.models or []
 			selectValues.push $ '<option>',
 				text: model.get('title') or model.get('name') or model.get('relativePath')
 				value: model.get('relativePath')
@@ -448,7 +451,16 @@ class FileListItem extends Controller
 			.addClass('file-list-item-'+item.cid)
 			.data('item', item)
 			.data('controller', @)
-		$title.text  item.get('title') or item.get('filename') or ''
+
+		title = item.get('title')
+		relativePath = item.get('relativePath')
+
+		if title
+			$title.text(title)
+			$title.append('<br>'+relativePath)
+		else
+			$title.text(relativePath)
+
 		$tags.text  (item.get('tags') or []).join(', ') or ''
 		$date.text   item.get('date')?.toLocaleDateString() or ''
 
@@ -489,12 +501,14 @@ class App extends Controller
 		'.link-page': '$linkPage'
 		'.toggle-preview': '$togglePreview'
 		'.toggle-meta': '$toggleMeta'
+		'.collection-list': '$collectionList'
 		'.content-table.files': '$filesList'
 		'.content-table.sites': '$sitesList'
 
 	events:
 		'click .sites .content-cell-name': 'clickSite'
 		'click .files .content-cell-name': 'clickFile'
+		'change .collection-list': 'clickCollection'
 		'click .menu .link': 'clickMenuLink'
 		'click .menu .toggle': 'clickMenuToggle'
 		'click .menu .button': 'clickMenuButton'
@@ -513,6 +527,10 @@ class App extends Controller
 		# Super
 		super
 
+		# Ensure that the change event is fired as soon as they've clicked the option
+		@$el.on 'click', '.collection-list', (e) ->
+			$(e.target).blur()
+
 		# Sites
 		Site.collection.bind('add',      @updateSite)
 		Site.collection.bind('remove',   @destroySite)
@@ -528,7 +546,7 @@ class App extends Controller
 
 		# Login
 		currentUser = localStorage.getItem('currentUser') or null
-		navigator.id.watch(
+		navigator.id?.watch(
 			loggedInUser: currentUser
 			onlogin: (args...) ->
 				# ignore as we listen to post message
@@ -596,7 +614,8 @@ class App extends Controller
 
 		switch mode
 			when 'site'
-				@updateFiles(@currentSite.get('files'))
+				@updateFiles(@currentFileCollection.get('files'))
+				@updateCollections(@currentSite.get('customFileCollections'))
 
 		@
 
@@ -775,6 +794,15 @@ class App extends Controller
 		return @updateControllers({$items, updateMethod}, items)
 
 
+	updateCollections: (items) =>
+		$collectionList = @$('.collection-list')
+		if $collectionList.data('site') isnt @currentSite
+			$collectionList.data('site', @currentSite).empty()
+			items.each (item) ->
+				$collectionList.append $('<option>', text: item.get('name'))
+			$collectionList.val(@currentFileCollection.get('name'))
+		return @
+
 
 	findSite: (item) =>
 		controller = $(".site-list-item-#{item.cid}:first").data('controller')
@@ -852,6 +880,7 @@ class App extends Controller
 	# Send the request off to persona to start the login process
 	# Receives the result via our `onMessage` handler
 	clickLogin: (e) =>
+		throw new Error("Offline people can't login")  unless navigator.id?
 		navigator.id.request()
 
 	# Handle menu effects
@@ -996,6 +1025,21 @@ class App extends Controller
 		# Chain
 		@
 
+	# Start viewing a collection when it is clicked
+	clickCollection: (e) =>
+		# Prepare
+		$target = $(e.target)
+		value = $target.val()
+		item = @currentSite.getCollection(value)
+
+		# Open the site
+		@openApp({
+			site: @currentSite
+			fileCollection: item
+		})
+
+		# Chain
+		@
 	# Start viewing a file when it is clicked
 	clickFile: (e) =>
 		# Disable click through
