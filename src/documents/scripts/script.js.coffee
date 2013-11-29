@@ -10,6 +10,8 @@ safe = (next, err, args...) ->
 	return next(err, args...)  if next
 	throw err  if err
 	return
+slugify = (str) ->
+	str.replace(/[^:-a-z0-9\.]/ig, '-').replace(/-+/g, '')
 
 # Tasks
 {Task, TaskGroup} = window.TaskGroup
@@ -32,11 +34,11 @@ class Collection extends QueryEngine.QueryCollection
 	fetchItem: (opts={}, next) ->
 		opts.next ?= next  if next
 
-		opts.id = opts.id?.id or opts.id?.cid or opts.id
+		opts.item = opts.item.get?('slug') or opts.item
 
-		console.log("Fetching", opts.id, "from", @options.name or @)
+		console.log("Fetching", opts.item, "from", @options.name or @)
 
-		result = @get(opts.id)
+		result = @get(opts.item)
 		return safe(opts.next, null, result)  if result
 
 		wait 1000, =>
@@ -52,6 +54,7 @@ class Collection extends QueryEngine.QueryCollection
 class Site extends Model
 	defaults:
 		name: null
+		slug: null
 		url: null
 		token: null
 		customFileCollections: null  # Collection of CustomFileCollection Models
@@ -68,11 +71,13 @@ class Site extends Model
 
 		result = {}
 
+		# Fetch all the collections
 		app.request url: "#{siteUrl}/restapi/collections/?securityToken=#{siteToken}", next: (err, data) =>
 			return safe(opts.next, err)  if err
 
 			result.customFileCollections = data
 
+			# Fetch all the files
 			app.request url: "#{siteUrl}/restapi/files/?securityToken=#{siteToken}", next: (err, data) =>
 				return safe(opts.next, err)  if err
 
@@ -80,6 +85,7 @@ class Site extends Model
 
 				@parse(result)
 
+				# Complete
 				safe(opts.next, null, @)
 
 		@
@@ -89,6 +95,15 @@ class Site extends Model
 		console.log 'model sync', opts
 		Site.collection.sync(opts)
 		@
+
+	get: (key) ->
+		switch key
+			when 'name'
+				@get('url').replace(/^.+?\/\//, '')
+			when 'slug'
+				slugify @get('name')
+			else
+				super
 
 	getCollection: (name) ->
 		return @get('customFileCollections').findOne({name})
@@ -184,6 +199,14 @@ class Sites extends Collection
 		safe(opts.next, null, @)
 		@
 
+	get: (id) ->
+		item = super or @findOne(
+			$or:
+				slug: id
+				name: id
+		)
+		return item
+
 # Instantiate the global collection of sites
 Site.collection = new Sites([], {
 	name: 'Global Site Collection'
@@ -200,6 +223,13 @@ class CustomFileCollection extends Model
 		relativePaths: null  # Array of the relative paths for each file in this collection
 		files: null  # A live updating collection of files within this collection
 		site: null  # The model of the site this is for
+
+	get: (key) ->
+		switch key
+			when 'slug'
+				slugify @get('name')
+			else
+				super
 
 	toJSON: ->
 		return _.omit(super(), ['files', 'site'])
@@ -238,7 +268,11 @@ class CustomFileCollections extends Collection
 	collection: CustomFileCollections
 
 	get: (id) ->
-		item = super or @findOne(name: id)
+		item = super or @findOne(
+			$or:
+				slug: id
+				name: id
+		)
 		return item
 
 # Instantiate the global collection of custom file collections
@@ -253,6 +287,7 @@ CustomFileCollection.collection = new CustomFileCollections([], {
 # Model
 class File extends Model
 	default:
+		slug: null
 		meta: null
 		filename: null
 		relativePath: null
@@ -294,8 +329,12 @@ class File extends Model
 		return _.omit(super(), ['site'])
 
 	get: (key) ->
-		value = super('meta')?[key] ? super(key)
-		return value
+		switch key
+			when 'slug'
+				slugify @get('relativePath')
+			else
+				value = super('meta')?[key] ? super(key)
+				value
 
 	parse: (response, opts) ->
 		# Parse the response
@@ -322,7 +361,11 @@ class Files extends Collection
 	collection: Files
 
 	get: (id) ->
-		item = super or @findOne(relativePath: id)
+		item = super or @findOne(
+			$or:
+				slug: id
+				relativePath: id
+		)
 		return item
 
 # Instantiate the global collection of custom file collections
@@ -612,13 +655,6 @@ class App extends Controller
 			.removeClass('app-login app-admin app-site app-page')
 			.addClass('app-'+mode)
 
-		switch mode
-			when 'site'
-				@updateFiles(@currentFileCollection.get('files'))
-				@updateCollections(@currentSite.get('customFileCollections'))
-			when 'page'
-				wait 10, -> @resizePreviewBar()
-
 		@
 
 	# @TODO
@@ -648,7 +684,7 @@ class App extends Controller
 			return @
 
 		# Site
-		Site.collection.fetchItem id: @currentSite, next: (err, @currentSite) =>
+		Site.collection.fetchItem item: @currentSite, next: (err, @currentSite) =>
 			# Handle problems
 			throw err  if err
 			throw new Error('could not find site')  unless @currentSite
@@ -656,26 +692,46 @@ class App extends Controller
 			# Apply
 			@$linkSite.text(@currentSite.get('title') or @currentSite.get('name') or @currentSite.get('url'))
 
+			# Prepare
+			customFileCollections = @currentSite.get('customFileCollections')
+
 			# Collection
 			# There will always be a collection, as we force it earlier
-			CustomFileCollection.collection.fetchItem id: @currentFileCollection, next: (err, @currentFileCollection) =>
+			customFileCollections.fetchItem item: @currentFileCollection, next: (err, @currentFileCollection) =>
 				# Handle problems
 				throw err  if err
 				throw new Error('could not find collection')  unless @currentFileCollection
 
+				# Prepare
+				files = @currentFileCollection.get('files')
+
 				# No File
 				unless @currentFile
+					# Update the collection listing
+					$collectionList = @$('.collection-list')
+					if $collectionList.data('site') isnt @currentSite
+						$collectionList.data('site', @currentSite)
+						$collectionList.empty()
+						customFileCollections.each (customFileCollection) ->
+							$collectionList.append $('<option>', {
+								text: customFileCollection.get('name')
+							})
+						$collectionList.val(@currentFileCollection.get('name'))
+
+					# Updat ethe file listing
+					@updateFiles(files)
+
 					# Apply
 					@setAppMode('site')
 
 					# Navigate to site default collection
-					@navigate('/site/'+@currentSite.cid+'/'+@currentFileCollection.cid)  if opts.navigate
+					@navigate('/site/'+@currentSite.get('slug')+'/'+@currentFileCollection.get('slug'))  if opts.navigate
 
 					# Done
 					return @
 
 				# File
-				File.collection.fetchItem id: @currentFile, next: (err, @currentFile) =>
+				files.fetchItem item: @currentFile, next: (err, @currentFile) =>
 					# Handle problems
 					throw err  if err
 					throw new Error('could not find file')  unless @currentFile
@@ -719,9 +775,10 @@ class App extends Controller
 
 					# Apply
 					@setAppMode('page')
+					wait 10, => @resizePreviewBar()
 
 					# Navigate to file
-					@navigate('/site/'+@currentSite.cid+'/'+@currentFileCollection.cid+'/'+@currentFile.cid)  if opts.navigate
+					@navigate('/site/'+@currentSite.get('slug')+'/'+@currentFileCollection.get('slug')+'/'+@currentFile.get('slug'))  if opts.navigate
 
 		# Chain
 		@
@@ -794,16 +851,6 @@ class App extends Controller
 		$items = @$('.content-row-file')
 		updateMethod = @updateFile
 		return @updateControllers({$items, updateMethod}, items)
-
-
-	updateCollections: (items) =>
-		$collectionList = @$('.collection-list')
-		if $collectionList.data('site') isnt @currentSite
-			$collectionList.data('site', @currentSite).empty()
-			items.each (item) ->
-				$collectionList.append $('<option>', text: item.get('name'))
-			$collectionList.val(@currentFileCollection.get('name'))
-		return @
 
 
 	findSite: (item) =>
