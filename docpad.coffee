@@ -45,24 +45,27 @@ docpadConfig = {
 
 			# The website's scripts
 			scripts: [
-				'/vendor/log.js'
-				'/vendor/modernizr.js'
-				'/vendor/jquery.js'
+				"/vendor/log.js"
 
-				'/vendor/taskgroup.js'
+				"""
+				<script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
+				<script>window.jQuery || document.write('<script defer="defer" src="/vendor/jquery-2.0.3.min.js"><\/sc'+'ript>')</script>
 
-				'/vendor/underscore.js'
-				'/vendor/backbone.js'
-				'/vendor/query-engine.js'
+				<script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.0/lodash.min.js"></script>
+				<script>window._ || document.write('<script defer="defer" src="/vendor/lodash.min.js"><\/sc'+'ript>')</script>
 
-				'/vendor/spine/lib/spine.js'
-				'/vendor/spine/lib/route.js'
+				<script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.0/backbone-min.js"></script>
+				<script>window.Backbone || document.write('<script defer="defer" src="/vendor/backbone.min.js"><\/sc'+'ript>')</script>
 
-				'/vendor/codemirror/codemirror.js'
+				<script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/3.20.0/codemirror.min.js"></script>
+				<script>window.CodeMirror || document.write('<script defer="defer" src="/vendor/codemirror/codemirror.js"><\/sc'+'ript>')</script>
+				"""
 
-				'//login.persona.org/include.js'
+				"//login.persona.org/include.js"
 
-				'/scripts/script.js'
+				"/vendor/spine/lib/spine.js"
+				"/vendor/spine/lib/route.js"
+				'/scripts/script-bundled.js'
 			]
 
 
@@ -97,6 +100,37 @@ docpadConfig = {
 	# Here we can define handlers for events that DocPad fires
 	# You can find a full listing of events on the DocPad Wiki
 	events:
+
+		# Write After
+		# Used to bundle the editor
+		writeAfter: (opts,next) ->
+			# Prepare
+			{rootPath, outPath} = @docpad.getConfig()
+
+			# Bundle the scripts the editor uses together
+			commands = [
+				[
+					"#{rootPath}/node_modules/.bin/browserify"
+					"-i", "backbone"
+					"-i", "exoskeleton"
+					"#{outPath}/scripts/script.js"
+					"-o", "#{outPath}/scripts/script-bundled.js"
+				],
+
+				[
+					"#{rootPath}/node_modules/.bin/browserify"
+					"-i", "backbone"
+					"-i", "exoskeleton"
+					"#{outPath}/scripts/inline.js"
+					"-o", "#{outPath}/scripts/inline-bundled.js"
+				]
+			]
+
+			# Execute
+			require('safeps').spawnMultiple(commands, {cwd:rootPath, output:true}, next)
+
+			# Chain
+			@
 
 		# Render Document
 		renderDocument: (opts) ->

@@ -48,7 +48,12 @@
     "docpad-plugin-text": "~2.3.2",
     "docpad-plugin-coffeekup": "~2.2.0",
     "docpad-plugin-ghpages": "~2.4.0",
-    "docpad-plugin-umd": "~2.1.0"
+    "docpad-plugin-umd": "~2.1.0",
+    "dominject": "~1.0.2",
+    "taskgroup": "~3.3.5",
+    "query-engine": "~1.5.5",
+    "browserify": "~2.35.4",
+    "safeps": "~2.2.9"
   },
   "devDependencies": {
     "docpad-plugin-livereload": "~2.5.3"

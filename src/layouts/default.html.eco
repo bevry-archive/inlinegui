@@ -19,18 +19,6 @@
 
 	<!-- DocPad Styles + Our Own -->
 	<%- @getBlock('styles').add(@site.styles).toHTML() %>
-
-	<!-- Icons -->
-	<!-- Favicon -->
-	<link rel="shortcut icon" href="/icons/favicon.ico" />
-	<!-- For non-Retina iPhone, iPod Touch, and Android 2.1+ devices: -->
-	<link rel="apple-touch-icon-precomposed" href="/images/icons/apple-touch-icon-57x57-precomposed.png" />
-	<!-- For first- and second-generation iPad: -->
-	<link rel="apple-touch-icon-precomposed" sizes="72x72" href="/images/icons/apple-touch-icon-72x72-precomposed.png" />
-	<!-- For iPhone with high-resolution Retina display: -->
-	<link rel="apple-touch-icon-precomposed" sizes="114x114" href="/images/icons/apple-touch-icon-114x114-precomposed.png" />
-	<!-- For third-generation iPad with high-resolution Retina display: -->
-	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="/images/icons/apple-touch-icon-144x144-precomposed.png" />
 </head>
 <body>
 	<%- @content %>

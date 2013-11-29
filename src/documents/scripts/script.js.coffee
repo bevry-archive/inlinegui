@@ -1,10 +1,9 @@
 # Inline GUI
 
 # =====================================
-## Helpers
+## Prepare
 
-# CoffeeScript friendly setTimeout function
-
+# Helpers
 wait = (delay,fn) -> setTimeout(fn,delay)
 safe = (next, err, args...) ->
 	return next(err, args...)  if next
@@ -13,8 +12,9 @@ safe = (next, err, args...) ->
 slugify = (str) ->
 	str.replace(/[^:-a-z0-9\.]/ig, '-').replace(/-+/g, '')
 
-# Tasks
-{Task, TaskGroup} = window.TaskGroup
+# Import
+QueryEngine = require('query-engine')
+{Task, TaskGroup} = require('taskgroup')
 
 
 # =====================================
