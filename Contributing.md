@@ -1,36 +1,75 @@
-# Contributing
+<!--
+v1.3.9 November 17, 2013
+https://github.com/bevry/base
+-->
 
-## Support
 
-[Post your question on StackOverflow with the `docpad` tag](http://stackoverflow.com/questions/tagged/docpad)
-
-
-## Bug reports
-
-[Post your bug report on the GitHub Issue Tracker for this project](https://github.com/docpad/docpad-plugin-inlinegui/issues)
+# Contribute
 
 
 ## Development
 
-### Install dependencies
+For developers and contributors
 
-``` bash
-npm install; npm install -g coffee-script
-```
+1. Fork project and clone your fork
 
-### Setup for development
+2. Install global dependencies
 
-``` bash
-cake setup
-```
+	``` bash
+	npm install -g coffee-script
+	```
 
-### Watch and compile
+3. Install local dependencies
 
-``` bash
-cake watch
-```
+	``` bash
+	cake install
+	```
+
+4. Compile project
+
+	``` bash
+	# Only once
+	cake compile
+
+	# On every change
+	cake watch
+	```
+
+5. Run tests
+
+	``` bash
+	cake test
+	```
 
 
-## Testing
+## Publishing
 
-No tests yet!
+For project maintainers
+
+1. Update meta files with latest information
+
+	``` bash
+	cake prepublish
+	```
+
+2. Add a changelog entry to `HISTORY.md` with change information
+
+	```
+	v2.0.0 April 17, 2013
+		- Something that changes
+	```
+
+3. Update `version` entry in `package.json` with new version number
+
+4. Commit changes
+
+	``` bash
+	git commit -a -m "A message about what changed"
+	```
+
+5. Publish new version
+	
+	``` bash
+	cake publish
+	```
+

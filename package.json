@@ -4,6 +4,17 @@
   "private": true,
   "description": "An inline GUI/CMS for DocPad",
   "homepage": "https://github.com/webwrite/inlinegui",
+  "license": {
+    "type": "MIT",
+    "url": "https://github.com/webwrite/inlinegui/blob/master/LICENSE.md#readme"
+  },
+  "badges": {
+    "travis": true,
+    "npm": true,
+    "gittip": "bevry",
+    "flattr": "344188/balupton-on-Flattr",
+    "paypal": "QB8GQPZAH84N6"
+  },
   "keywords": [
     "docpad-plugin",
     "docpad",
@@ -12,7 +23,10 @@
     "inline",
     "contenteditable"
   ],
-  "author": "Myplanet Internet Solutions Ltd. <hello@myplanetdigital.com> (http://www.myplanetdigital.com/)",
+  "author": "2013+ Bevry Pty Ltd <us@bevry.me> (http://bevry.me)",
+  "sponsors": [
+    "Myplanet Digital <hello@myplanetdigital.com> (http://www.myplanetdigital.com)"
+  ],
   "maintainers": [
     "Neil Taylor <neil.t@myplanetdigital.com> (https://github.com/neilbaylorrulez)",
     "Benjamin Lupton <b@lupton.cc> (https://github.com/balupton)"
@@ -29,10 +43,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/webwrite/inlinegui.git"
-  },
-  "license": {
-    "type": "MIT",
-    "url": "https://github.com/webwrite/inlinegui/blob/master/LICENSE.md#readme"
   },
   "engines": {
     "node": ">=0.8",
@@ -56,7 +66,8 @@
     "safeps": "~2.2.9"
   },
   "devDependencies": {
-    "docpad-plugin-livereload": "~2.5.3"
+    "docpad-plugin-livereload": "~2.5.3",
+    "projectz": "~0.2.7"
   },
   "main": "node_modules/docpad/bin/docpad-server",
   "scripts": {

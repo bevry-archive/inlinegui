@@ -2,8 +2,11 @@
 
 <!-- BADGES/ -->
 
-
-
+[![Build Status](http://img.shields.io/travis-ci/webwrite/inlinegui.png?branch=master)](http://travis-ci.org/webwrite/inlinegui "Check this project's build status on TravisCI")
+[![NPM version](http://badge.fury.io/js/inlinegui.png)](https://npmjs.org/package/inlinegui "View this project on NPM")
+[![Gittip donate button](http://img.shields.io/gittip/bevry.png)](https://www.gittip.com/bevry/ "Donate weekly to this project using Gittip")
+[![Flattr donate button](http://img.shields.io/flattr/donate.png?color=yellow)](http://flattr.com/thing/344188/balupton-on-Flattr "Donate monthly to this project using Flattr")
+[![PayPayl donate button](http://img.shields.io/paypal/donate.png?color=yellow)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QB8GQPZAH84N6 "Donate once-off to this project using Paypal")
 
 <!-- /BADGES -->
 
@@ -33,15 +36,12 @@ Add support to your own backend by implementing the [Web Write Spec](https://git
 ![File Manager Preview](https://raw.github.com/webwrite/inlinegui/0b02ffc96fccd4b1327a617ec3dc6a2dec326150/src/files/resources/images/file-manager.jpg)
 
 
+## Usage
 
-## Development
+Go to https://github.com/webwrite/inlinegui/ and connect your webwrite enabled website.
 
-```
-git clone https://github.com/webwrite/inlinegui.git inlinegui
-cd inlinegui
-npm install; npm install -g coffee-script docpad
-docpad run
-```
+To enable Webwrite for DocPad, check out the [inlinegui plugin](http://docpad.org/plugin/inlinegui).
+
 
 <!-- HISTORY/ -->
 
@@ -49,6 +49,15 @@ docpad run
 [Discover the change history by heading on over to the `History.md` file.](https://github.com/webwrite/inlinegui/blob/master/History.md#files)
 
 <!-- /HISTORY -->
+
+
+<!-- CONTRIBUTE/ -->
+
+## Contribute
+
+[Discover how you can contribute by heading on over to the `Contributing.md` file.](https://github.com/webwrite/inlinegui/blob/master/Contributing.md#files)
+
+<!-- /CONTRIBUTE -->
 
 
 <!-- BACKERS/ -->
@@ -64,9 +73,15 @@ These amazing people are maintaining this project:
 
 ### Sponsors
 
-No sponsors yet! Will you be the first?
+These amazing people have contributed finances to this project:
 
+- Myplanet Digital <hello@myplanetdigital.com> (http://www.myplanetdigital.com)
 
+Become a sponsor!
+
+[![Gittip donate button](http://img.shields.io/gittip/bevry.png)](https://www.gittip.com/bevry/ "Donate weekly to this project using Gittip")
+[![Flattr donate button](http://img.shields.io/flattr/donate.png?color=yellow)](http://flattr.com/thing/344188/balupton-on-Flattr "Donate monthly to this project using Flattr")
+[![PayPayl donate button](http://img.shields.io/paypal/donate.png?color=yellow)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QB8GQPZAH84N6 "Donate once-off to this project using Paypal")
 
 ### Contributors
 
@@ -88,7 +103,7 @@ These amazing people have contributed code to this project:
 
 Licensed under the incredibly [permissive](http://en.wikipedia.org/wiki/Permissive_free_software_licence) [MIT license](https://github.com/webwrite/inlinegui/blob/master/LICENSE.md#readme)
 
-Copyright &copy; Myplanet Internet Solutions Ltd. <hello@myplanetdigital.com> (http://www.myplanetdigital.com/)
+Copyright &copy; 2013+ Bevry Pty Ltd <us@bevry.me> (http://bevry.me)
 
 <!-- /LICENSE -->
 
