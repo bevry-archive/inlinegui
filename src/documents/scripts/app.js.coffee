@@ -1152,7 +1152,7 @@ class App extends Controller
 
 		# Child has loaded
 		if data.action is 'childLoaded'
-			$previewbar = @editView?.$previewbar
+			$previewbar = @editView.$previewbar
 			$previewbar.addClass('loaded')
 
 		# Login the user

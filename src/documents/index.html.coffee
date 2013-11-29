@@ -52,7 +52,7 @@ aside '.app', ->
 			form '.site-add-form', action:'', method:'PUT', ->
 				div '.field.field-url', ->
 					label -> 'Site URL'
-					input type:'text', value:'http://localhost:9778', ->
+					input type:'text', value:'about:blank', ->
 
 				div '.field.field-token', ->
 					label -> 'Security Token'
