@@ -1,0 +1,50 @@
+# This script is injected into the iframe
+if parent isnt self
+	# Add the activated class
+	document.body.className += ' inlinegui-actived'
+
+	# Add the style to all editables
+	# for item in document.getElementsByClassName('inlinegui-editable')
+	#	item.setAttribute('contenteditable', true)
+
+
+	# TODO:
+	# - track dirty state
+	# - track changes
+	# - add dirty classname when dirty
+
+
+	editables = document.getElementsByClassName('inlinegui-editable')
+
+
+
+	window.onload = ->
+		# Notify the parent we've loaded
+		parent.postMessage?({
+			action: 'childLoaded'
+			height: document.body.scrollHeight
+		}, '*')
+
+		# Resize ourselves in the parent
+		setInterval(
+			->
+				parent.postMessage?({
+					action: 'resizeChild',
+					height: document.body.scrollHeight
+				}, '*')
+			100
+		)
+
+
+	dominject = require('dominject')
+	dominject(
+		type: 'script'
+		url: '<%= @site.url+"vendor/ckeditor/ckeditor.js" %>'
+		next: (err,el) ->
+			if el
+				CKEDITOR.disableAutoInline = true
+
+				for editable in editables
+					editable.setAttribute('contenteditable', true)
+					CKEDITOR.inline(editable)
+	)

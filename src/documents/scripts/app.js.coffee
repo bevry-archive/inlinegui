@@ -1146,18 +1146,18 @@ class App extends Controller
 		try
 			data = JSON.parse(data)  if typeof data is 'string'
 
-		# Handle
-		switch true
-			when data.action is 'resizeChild'
-				# Prepare
-				@resizePreviewBar(data.height+'px')
+		# Resize the child
+		if data.action in ['resizeChild', 'childLoaded']
+			@resizePreviewBar(data.height+'px')
 
-			when data.d?.assertion?
-				# Prepare
-				@loginUser(data.d.email)
+		# Child has loaded
+		if data.action is 'childLoaded'
+			$previewbar = @editView?.$previewbar
+			$previewbar.addClass('loaded')
 
-			else
-				console.log('Unknown message from child:', data)
+		# Login the user
+		if data.d?.assertion?
+			@loginUser(data.d.email)
 
 		# Chain
 		@

@@ -40,7 +40,7 @@ docpadConfig = {
 
 				'/vendor/codemirror/codemirror.css'
 
-				'/styles/style.css'
+				'/styles/app.css'
 			]
 
 			# The website's scripts
@@ -65,7 +65,7 @@ docpadConfig = {
 
 				"/vendor/spine/lib/spine.js"
 				"/vendor/spine/lib/route.js"
-				'/scripts/script-bundled.js'
+				'/scripts/app-bundled.js'
 			]
 
 
@@ -94,6 +94,14 @@ docpadConfig = {
 			@site.keywords.concat(@document.keywords or []).join(', ')
 
 
+
+	environments:
+		development:
+			templateData:
+				site:
+					url: "http://localhost:9779/"
+
+
 	# =================================
 	# DocPad Events
 
@@ -113,8 +121,8 @@ docpadConfig = {
 					"#{rootPath}/node_modules/.bin/browserify"
 					"-i", "backbone"
 					"-i", "exoskeleton"
-					"#{outPath}/scripts/script.js"
-					"-o", "#{outPath}/scripts/script-bundled.js"
+					"#{outPath}/scripts/app.js"
+					"-o", "#{outPath}/scripts/app-bundled.js"
 				],
 
 				[
