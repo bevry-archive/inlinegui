@@ -378,9 +378,21 @@ File.collection = new Files([], {
 ## Controllers/Views
 
 class Controller extends Spine.Controller
+	render: =>
+		for own itemEvent,handler of (@itemEvents or {})
+			fn = @[handler]
+			@item.on(itemEvent, fn)
+			fn()
+
+		@
+
 	destroy: ->
+		for own itemEvent,handler of (@itemEvents or {})
+			fn = @[handler]
+			@item.off(itemEvent, fn)
+
 		@release()
-		# @item?.destroy()
+
 		@
 
 class FileEditItem extends Controller
@@ -395,6 +407,10 @@ class FileEditItem extends Controller
 		'.page-preview': '$previewbar'
 		'.page-source':  '$sourcebar'
 		'.page-meta':    '$metabar'
+
+	itemEvents:
+		'change:title': 'updateTitle'
+		'change:filename': 'updateTitle'
 
 	getCollectionSelectValues: (collectionName) ->
 		{item} = @
@@ -413,10 +429,15 @@ class FileEditItem extends Controller
 		selectValues = _.uniq item.get('site').get('files').pluck(fieldName)
 		return selectValues
 
+	updateTitle: (model, title) =>
+		title ?= @item.get('title') or @item.get('filename') or ''
+		console.log 'updated title on', @item.cid, title
+		@$title.val(title)
+		@
+
 	render: =>
 		# Prepare
-		{item, $el, $title, $date, $layout, $author, $previewbar, $source} = @
-		title   = item.get('title') or item.get('filename') or ''
+		{item, $el, $date, $layout, $author, $previewbar, $source} = @
 		date    = item.get('date')?.toISOString()
 		source  = item.get('source')
 		url     = item.get('site').get('url')+item.get('url')
@@ -426,7 +447,6 @@ class FileEditItem extends Controller
 			.addClass('file-edit-item-'+item.cid)
 			.data('item', item)
 			.data('controller', @)
-		$title.val(title)
 		$date.val(date)
 		$source.val(source)
 
@@ -447,7 +467,7 @@ class FileEditItem extends Controller
 		})
 
 		# Chain
-		@
+		super
 
 	cancel: (opts={}, next) ->
 		opts.next ?= next  if next
@@ -1149,6 +1169,14 @@ class App extends Controller
 		# Resize the child
 		if data.action in ['resizeChild', 'childLoaded']
 			@resizePreviewBar(data.height+'px')
+
+		# Child has changed
+		if data.action is 'change'
+			attrs = {}
+			attrs[data.attribute] = data.value
+			item = @currentFileCollection.get('files').findOne(url: data.url)
+			console.log 'updated', item.cid, 'with', attrs
+			item.set(attrs)
 
 		# Child has loaded
 		if data.action is 'childLoaded'

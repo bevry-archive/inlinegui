@@ -10,6 +10,11 @@ return  if parent is self
 {TaskGroup} = require('taskgroup')
 dominject = require('dominject')
 
+# Helpers
+wait = (delay,fn) -> setTimeout(fn, delay)
+waiter = (delay,fn) -> setInterval(fn, delay)
+sendMessage = (data) -> parent.postMessage(data, '*')
+
 # Define our application
 class App
 
@@ -40,23 +45,28 @@ class App
 
 		if CKEDITOR?
 			CKEDITOR.disableAutoInline = true
-			CKEDITOR.inline(editable)  for editable in editables
+			[].slice.call(editables).forEach (editable) ->
+				editor = CKEDITOR.inline(editable)
+				editor.on 'change', ->
+					sendMessage(
+						action: 'change'
+						url: editable.getAttribute('about')
+						attribute: editable.getAttribute('property')
+						value: editor.getData()
+					)
 
 		# Notify the parent we've loaded
-		parent.postMessage?({
+		sendMessage(
 			action: 'childLoaded'
 			height: document.body.scrollHeight
-		}, '*')
+		)
 
 		# Resize ourselves in the parent
-		setInterval(
-			->
-				parent.postMessage?({
-					action: 'resizeChild',
-					height: document.body.scrollHeight
-				}, '*')
-			100
-		)
+		waiter 100, ->
+			sendMessage(
+				action: 'resizeChild',
+				height: document.body.scrollHeight
+			)
 
 		# Loaded
 		next?()
