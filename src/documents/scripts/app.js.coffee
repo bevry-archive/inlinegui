@@ -312,7 +312,7 @@ class File extends Model
 		siteToken = site.get('token')
 
 		if opts.method isnt 'delete'
-			opts.data ?= _.pick(file.toJSON(), ['title'])
+			opts.data ?= _.pick(file.toJSON(), ['title', 'content'])
 		opts.method ?= if @isNew() then 'put' else 'post'
 		opts.url ?= "#{siteUrl}/restapi/collection/database/#{fileRelativePath}?securityToken=#{siteToken}"
 
