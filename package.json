@@ -9,8 +9,8 @@
     "url": "https://github.com/webwrite/inlinegui/blob/master/LICENSE.md#readme"
   },
   "badges": {
-    "travis": true,
-    "npm": true,
+    "travis": false,
+    "npm": false,
     "gittip": "bevry",
     "flattr": "344188/balupton-on-Flattr",
     "paypal": "QB8GQPZAH84N6"
