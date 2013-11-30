@@ -20,6 +20,15 @@ extractData = (response) ->
 	data = JSON.parse(data)  if typeof data is 'string'
 	data = data.data  if data.data?
 	return data
+extractSyncOpts = (args) ->
+	# Extract sync arguments
+	if args.length is 3
+		opts = args[2] or {}
+		opts.method = args[0]
+	else
+		opts = args[0]
+		opts.next ?= args[1] or null
+	return opts
 
 # Import
 QueryEngine = require('query-engine')
@@ -81,7 +90,7 @@ class Site extends Model
 		result = {}
 
 		# Do our ajax requests in parallel
-		tasks = new TaskGroup(concurrency: 1).once 'complete', (err) =>
+		tasks = new TaskGroup(concurrency: 0).once 'complete', (err) =>
 			return next(err)  if err
 			@set @parse(result)
 			return next()
@@ -105,9 +114,9 @@ class Site extends Model
 
 		@
 
-	sync: (opts={}, next) ->
-		opts.next ?= next  if next
-		#console.log 'model sync', opts
+	sync: (args...) ->
+		opts = extractSyncOpts(args)
+		console.log 'model sync', opts
 		Site.collection.sync(opts)
 		@
 
@@ -195,19 +204,21 @@ class Sites extends Collection
 
 		sites.forEach (site, index) ->
 			tasks.addTask (complete) ->
+				site.id = index  # give it an id so that collection sync fires when destroying the item
 				sites[index] = new Site(site).fetch({}, complete)
 
 		tasks.run()
 
 		@
 
-	sync: (opts={}, next) ->
-		opts.next ?= next  if next
-
-		#console.log 'collection sync', opts
-		sites = JSON.stringify(@toJSON())
-		localStorage.setItem('sites', sites)
-		safe(opts.next, null, @)
+	sync: (args...) ->
+		opts = extractSyncOpts(args)
+		console.log 'collection sync', opts
+		opts.success?()  # destroy it
+		wait 0, =>  # wait for colleciton remote events to fire
+			sites = JSON.stringify(@toJSON())
+			localStorage.setItem('sites', sites)
+			safe(opts.next, null, @)
 		@
 
 	get: (id) ->
@@ -325,8 +336,8 @@ class File extends Model
 			else
 				super
 
-	sync: (opts={}, next) ->
-		opts.next ?= next  if next
+	sync: (args...) ->
+		opts = extractSyncOpts(args)
 
 		#console.log 'file sync', opts
 
@@ -1140,6 +1151,8 @@ class App extends Controller
 		if $target.parents().andSelf().filter('.button-delete').length is 1
 			# Delete
 			controller = $row.data('controller')
+			debugger
+			controller.item.destroy()
 			controller.destroy()
 		else
 			# Open the site
