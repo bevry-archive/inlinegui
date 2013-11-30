@@ -31,6 +31,7 @@ extractSyncOpts = (args) ->
 	return opts
 
 # Import
+moment = require('moment')
 QueryEngine = require('query-engine')
 {Task, TaskGroup} = require('taskgroup')
 
@@ -379,6 +380,9 @@ class File extends Model
 			data[key] = value
 		delete data.meta
 
+		# Fix date
+		data.date = new Date(data.date)  if data.date
+
 		# Apply the received data to the model
 		return data
 
@@ -535,7 +539,8 @@ class FileEditItem extends Controller
 		@point(item, 'author').to($author)
 		@point(item, 'source').to($source)
 		@point(item, 'date').to($date).using ($el, item, value) ->
-			$el.val(value?.toISOString())
+			if value?
+				$el.val moment(value).format('YYYY-MM-DD')
 		@point(item, 'title', 'filename').to($title).using ($el, item, value) ->
 			$el.val(item.get('title') or item.get('filename'))
 
