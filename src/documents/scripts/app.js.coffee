@@ -81,7 +81,7 @@ class Site extends Model
 		result = {}
 
 		# Do our ajax requests in parallel
-		tasks = new TaskGroup(concurrency: 0).once 'complete', (err) =>
+		tasks = new TaskGroup(concurrency: 1).once 'complete', (err) =>
 			return next(err)  if err
 			@set @parse(result)
 			return next()
@@ -315,8 +315,15 @@ class File extends Model
 		site: null  # The model of the site this is for
 
 	constructor: ->
-		@metaAttributes ?= ['title', 'content']
+		@metaAttributes ?= ['title', 'content', 'date', 'author', 'layout']
 		super
+
+	get: (key) ->
+		switch key
+			when 'slug'
+				slugify @get('relativePath')
+			else
+				super
 
 	sync: (opts={}, next) ->
 		opts.next ?= next  if next
@@ -353,6 +360,7 @@ class File extends Model
 		# Apply meta directly
 		for own key,value of data.meta
 			data[key] = value
+		delete data.meta
 
 		# Apply the received data to the model
 		return data
@@ -395,6 +403,7 @@ class Pointer
 		@config ?= {}
 
 		@config.handler ?= ($el, model, value) ->
+			value ?= ''
 			if $el.is(':input')
 				$el.val(value)
 			else
@@ -426,7 +435,7 @@ class Pointer
 		@config.handler(@config.element, model, value)
 		return true
 
-	with: (handler) ->
+	using: (handler) ->
 		@setConfig({handler})
 		@
 
@@ -449,6 +458,7 @@ class Controller extends Spine.Controller
 
 	destroy: ->
 		pointer.destroy()  for pointer in @pointers  if @pointers
+		@pointers = null
 		@release()
 		@
 
@@ -484,34 +494,31 @@ class FileEditItem extends Controller
 
 	render: =>
 		# Prepare
-		{item, $el, $date, $layout, $author, $previewbar, $source} = @
-		date    = item.get('date')?.toISOString()
-		source  = item.get('source')
+		{item, $el, $source, $date, $title, $layout, $author, $previewbar, $source} = @
 		url     = item.get('site').get('url')+item.get('url')
-
-		#@point(@item, 'date').to(@$date).with ($el, item, value) => $el.val(value.toISOString())
-		@point(@item, 'title', 'filename').to(@$title).with ($el, item, value) =>
-			console.log value, item.get('title'), @item.get('title')
-			$el.val(item.get('title') or item.get('filename'))
 
 		# Apply
 		$el
 			.addClass('file-edit-item-'+item.cid)
 			.data('item', item)
 			.data('controller', @)
-		$date.val(date)
-		$source.val(source)
 
 		$author.empty().append(
 			@getCollectionSelectValues('authors').concat @getOtherSelectValues('author')
-		).val(item.get('author'))
-
+		)
 		$layout.empty().append(
 			@getCollectionSelectValues('layouts').concat @getOtherSelectValues('author')
-		).val(item.get('layout'))
+		)
 
-		$previewbar.attr('src': url)
-		# @todo figure out why file.url doesn't work
+		@point(item, 'url').to($previewbar).using ($el, item, value) ->
+			$el.attr('src': value)
+		@point(item, 'layout').to($layout)
+		@point(item, 'author').to($author)
+		@point(item, 'source').to($source)
+		@point(item, 'date').to($date).using ($el, item, value) ->
+			$el.val(value?.toISOString())
+		@point(item, 'title', 'filename').to($title).using ($el, item, value) ->
+			$el.val(item.get('title') or item.get('filename'))
 
 		# Editor
 		@editor = CodeMirror.fromTextArea($source.get(0), {
