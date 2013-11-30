@@ -598,17 +598,20 @@ class FileListItem extends Controller
 			.data('item', item)
 			.data('controller', @)
 
-		title = item.get('title')
-		relativePath = item.get('relativePath')
+		@point(item, 'title', 'relativePath').to($title).using ($el, item, value) ->
+			title = item.get('title')
+			relativePath = item.get('relativePath')
+			if title
+				$el.text(title)
+				$el.append('<br>'+relativePath)
+			else
+				$el.text(relativePath)
 
-		if title
-			$title.text(title)
-			$title.append('<br>'+relativePath)
-		else
-			$title.text(relativePath)
+		@point(item, 'tags').to($tags).using ($el, item, value) ->
+			$el.text (value or []).join(', ') or ''
 
-		$tags.text  (item.get('tags') or []).join(', ') or ''
-		$date.text   item.get('date')?.toLocaleDateString() or ''
+		@point(item, 'date').to($date).using ($el, item, value) ->
+			$date.text value?.toLocaleDateString() or ''
 
 		# Chain
 		@
