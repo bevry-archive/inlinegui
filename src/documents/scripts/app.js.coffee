@@ -1,3 +1,7 @@
+###
+standalone: true
+###
+
 # Inline GUI
 
 # =====================================
@@ -11,6 +15,11 @@ safe = (next, err, args...) ->
 	return
 slugify = (str) ->
 	str.replace(/[^:-a-z0-9\.]/ig, '-').replace(/-+/g, '')
+extractData = (response) ->
+	data = response
+	data = JSON.parse(data)  if typeof data is 'string'
+	data = data.data  if data.data?
+	return data
 
 # Import
 QueryEngine = require('query-engine')
@@ -36,13 +45,13 @@ class Collection extends QueryEngine.QueryCollection
 
 		opts.item = opts.item.get?('slug') or opts.item
 
-		console.log("Fetching", opts.item, "from", @options.name or @)
+		#console.log("Fetching", opts.item, "from", @options.name or @)
 
 		result = @get(opts.item)
 		return safe(opts.next, null, result)  if result
 
 		wait 1000, =>
-			console.log "Couldn't fetch the item, trying again"
+			#console.log "Couldn't fetch the item, trying again"
 			@fetchItem(opts)
 
 		@
@@ -63,7 +72,7 @@ class Site extends Model
 	fetch:  (opts={}, next) ->
 		opts.next ?= next  if next
 
-		console.log 'model fetch', opts
+		#console.log 'model fetch', opts
 
 		site = @
 		siteUrl = site.get('url')
@@ -71,28 +80,34 @@ class Site extends Model
 
 		result = {}
 
+		# Do our ajax requests in parallel
+		tasks = new TaskGroup(concurrency: 0).once 'complete', (err) =>
+			return next(err)  if err
+			@set @parse(result)
+			return next()
+
 		# Fetch all the collections
-		app.request url: "#{siteUrl}/restapi/collections/?securityToken=#{siteToken}", next: (err, data) =>
-			return safe(opts.next, err)  if err
+		tasks.addTask (complete) =>
+			app.request url: "#{siteUrl}/restapi/collections/?securityToken=#{siteToken}", next: (err, data) =>
+				return complete(err)  if err
+				result.customFileCollections = data
+				return complete()
 
-			result.customFileCollections = data
-
-			# Fetch all the files
+		# Fetch all the files
+		tasks.addTask (complete) =>
 			app.request url: "#{siteUrl}/restapi/files/?securityToken=#{siteToken}", next: (err, data) =>
-				return safe(opts.next, err)  if err
-
+				return complete(err)  if err
 				result.files = data
+				return complete()
 
-				@parse(result)
-
-				# Complete
-				safe(opts.next, null, @)
+		# Run our tasks
+		tasks.run()
 
 		@
 
 	sync: (opts={}, next) ->
 		opts.next ?= next  if next
-		console.log 'model sync', opts
+		#console.log 'model sync', opts
 		Site.collection.sync(opts)
 		@
 
@@ -117,11 +132,7 @@ class Site extends Model
 	parse: (response, opts={}) ->
 		# Prepare
 		site = @
-
-		# Parse the response
-		data = response
-		data = JSON.stringify(response)  if typeof response is 'string'
-		data = data.data  if data.data?
+		data = extractData(response)
 
 		if Array.isArray(data.customFileCollections)
 			# Add the site to each site collection
@@ -129,7 +140,7 @@ class Site extends Model
 				collection.site = site
 
 			# Add the site custom file collections to the global collection
-			CustomFileCollection.collection.add(data.customFileCollections)
+			CustomFileCollection.collection.add(data.customFileCollections, {parse:true})
 
 			# Ensure it doesn't overwrite our live collection
 			delete data.customFileCollections
@@ -140,7 +151,7 @@ class Site extends Model
 				file.site = @
 
 			# Add the site files to the global collection
-			File.collection.add(data.files)
+			File.collection.add(data.files, {parse:true})
 
 			# Ensure it doesn't overwrite our live collection
 			delete data.files
@@ -175,7 +186,7 @@ class Sites extends Collection
 	fetch: (opts={}, next) ->
 		opts.next ?= next  if next
 
-		console.log 'collection fetch', opts
+		#console.log 'collection fetch', opts
 		sites = JSON.parse(localStorage.getItem('sites') or 'null') or []
 
 		tasks = new TaskGroup concurrency: 0, next: (err) =>
@@ -193,7 +204,7 @@ class Sites extends Collection
 	sync: (opts={}, next) ->
 		opts.next ?= next  if next
 
-		console.log 'collection sync', opts
+		#console.log 'collection sync', opts
 		sites = JSON.stringify(@toJSON())
 		localStorage.setItem('sites', sites)
 		safe(opts.next, null, @)
@@ -288,7 +299,6 @@ CustomFileCollection.collection = new CustomFileCollections([], {
 class File extends Model
 	default:
 		slug: null
-		meta: null
 		filename: null
 		relativePath: null
 		url: null
@@ -298,12 +308,20 @@ class File extends Model
 		content: null
 		contentRendered: null
 		source: null
+
+		title: null
+		layout: null
+		author: null
 		site: null  # The model of the site this is for
+
+	constructor: ->
+		@metaAttributes ?= ['title', 'content']
+		super
 
 	sync: (opts={}, next) ->
 		opts.next ?= next  if next
 
-		console.log 'file sync', opts
+		#console.log 'file sync', opts
 
 		file = @
 		fileRelativePath = file.get('relativePath')
@@ -312,14 +330,14 @@ class File extends Model
 		siteToken = site.get('token')
 
 		if opts.method isnt 'delete'
-			opts.data ?= _.pick(file.toJSON(), ['title', 'content'])
+			opts.data ?= _.pick(file.toJSON(), @metaAttributes)
 		opts.method ?= if @isNew() then 'put' else 'post'
 		opts.url ?= "#{siteUrl}/restapi/collection/database/#{fileRelativePath}?securityToken=#{siteToken}"
 
 		app.request opts, (err, data) =>
 			return safe(opts.next, err)  if err
 
-			@parse(data)
+			@set @parse(data)
 
 			safe(opts.next, null, @)
 
@@ -328,23 +346,16 @@ class File extends Model
 	toJSON: ->
 		return _.omit(super(), ['site'])
 
-	get: (key) ->
-		switch key
-			when 'slug'
-				slugify @get('relativePath')
-			else
-				value = super('meta')?[key] ? super(key)
-				value
-
 	parse: (response, opts) ->
-		# Parse the response
-		data = JSON.stringify(response).data
+		# Prepare
+		data = extractData(response)
+
+		# Apply meta directly
+		for own key,value of data.meta
+			data[key] = value
 
 		# Apply the received data to the model
-		@set(data)
-
-		# Chain
-		@
+		return data
 
 	initialize: ->
 		super
@@ -375,24 +386,70 @@ File.collection = new Files([], {
 
 
 # =====================================
-## Controllers/Views
+## Pointers
 
-class Controller extends Spine.Controller
-	render: =>
-		for own itemEvent,handler of (@itemEvents or {})
-			fn = @[handler]
-			@item.on(itemEvent, fn)
-			fn()
+class Pointer
+	config: null
+
+	constructor: (config) ->
+		@config ?= {}
+
+		@config.handler ?= ($el, model, value) ->
+			if $el.is(':input')
+				$el.val(value)
+			else
+				$el.text(value)
+
+		@setConfig(config)
+
+		setTimeout(
+			=>
+				@config.model.on('change:'+attribute, @handler)  for attribute in @config.attributes
+				@handler()
+			0
+		)
 
 		@
 
 	destroy: ->
-		for own itemEvent,handler of (@itemEvents or {})
-			fn = @[handler]
-			@item.off(itemEvent, fn)
+		@config.model.off('change:'+attribute, @handler)  for attribute in @config.attributes
+		@
 
+	setConfig: (config={}) ->
+		for own key,value of config
+			@config[key] = value
+		@
+
+	handler: (model, value) =>
+		model ?= @config.model
+		value ?= model.get([@config.attributes[0]])
+		@config.handler(@config.element, model, value)
+		return true
+
+	with: (handler) ->
+		@setConfig({handler})
+		@
+
+	to: (element) ->
+		@setConfig({element})
+		@
+
+point = (model, attributes...) ->
+	return new Pointer({model, attributes})
+
+
+# =====================================
+## Controllers/Views
+
+class Controller extends Spine.Controller
+	point: (args...) ->
+		pointer = point(args...)
+		(@pointers ?= []).push(pointer)
+		return pointer
+
+	destroy: ->
+		pointer.destroy()  for pointer in @pointers  if @pointers
 		@release()
-
 		@
 
 class FileEditItem extends Controller
@@ -407,10 +464,6 @@ class FileEditItem extends Controller
 		'.page-preview': '$previewbar'
 		'.page-source':  '$sourcebar'
 		'.page-meta':    '$metabar'
-
-	itemEvents:
-		'change:title': 'updateTitle'
-		'change:filename': 'updateTitle'
 
 	getCollectionSelectValues: (collectionName) ->
 		{item} = @
@@ -429,18 +482,17 @@ class FileEditItem extends Controller
 		selectValues = _.uniq item.get('site').get('files').pluck(fieldName)
 		return selectValues
 
-	updateTitle: (model, title) =>
-		title ?= @item.get('title') or @item.get('filename') or ''
-		console.log 'updated title on', @item.cid, title
-		@$title.val(title)
-		@
-
 	render: =>
 		# Prepare
 		{item, $el, $date, $layout, $author, $previewbar, $source} = @
 		date    = item.get('date')?.toISOString()
 		source  = item.get('source')
 		url     = item.get('site').get('url')+item.get('url')
+
+		#@point(@item, 'date').to(@$date).with ($el, item, value) => $el.val(value.toISOString())
+		@point(@item, 'title', 'filename').to(@$title).with ($el, item, value) =>
+			console.log value, item.get('title'), @item.get('title')
+			$el.val(item.get('title') or item.get('filename'))
 
 		# Apply
 		$el
@@ -467,7 +519,7 @@ class FileEditItem extends Controller
 		})
 
 		# Chain
-		super
+		@
 
 	cancel: (opts={}, next) ->
 		opts.next ?= next  if next
@@ -683,9 +735,6 @@ class App extends Controller
 		# Prepare
 		opts ?= {}
 		opts.navigate ?= true
-
-		# Log
-		console.log 'openApp', opts
 
 		# Apply
 		@currentSite = opts.site or null
@@ -1175,7 +1224,6 @@ class App extends Controller
 			attrs = {}
 			attrs[data.attribute] = data.value
 			item = @currentFileCollection.get('files').findOne(url: data.url)
-			console.log 'updated', item.cid, 'with', attrs
 			item.set(attrs)
 
 		# Child has loaded
