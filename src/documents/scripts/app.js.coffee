@@ -234,6 +234,9 @@ Site.collection = new Sites([], {
 	name: 'Global Site Collection'
 })
 
+# Expose
+window.Site = Site
+
 
 # -------------------------------------
 # Custom File Collections
@@ -277,10 +280,10 @@ class CustomFileCollection extends Model
 		@
 
 	updateQuery: ->
-		@attributes.files.setQuery('CustomFileCollection Limiter',
+		query =
 			site: @get('site')
 			relativePath: $in: @get('relativePaths')
-		).query()
+		@attributes.files.setQuery('CustomFileCollection Limiter', query).query()
 		@
 
 
@@ -301,6 +304,9 @@ class CustomFileCollections extends Collection
 CustomFileCollection.collection = new CustomFileCollections([], {
 	name: 'Global CustomFileCollection Collection'
 })
+
+# Expose
+window.CustomFileCollection = CustomFileCollection
 
 
 # -------------------------------------
@@ -402,6 +408,9 @@ class Files extends Collection
 File.collection = new Files([], {
 	name: 'Global File Collection'
 })
+
+# Expose
+window.File = File
 
 
 # =====================================
@@ -506,7 +515,6 @@ class FileEditItem extends Controller
 	render: =>
 		# Prepare
 		{item, $el, $source, $date, $title, $layout, $author, $previewbar, $source} = @
-		url     = item.get('site').get('url')+item.get('url')
 
 		# Apply
 		$el
@@ -522,7 +530,7 @@ class FileEditItem extends Controller
 		)
 
 		@point(item, 'url').to($previewbar).using ($el, item, value) ->
-			$el.attr('src': value)
+			$el.attr('src': item.get('site').get('url')+item.get('url'))
 		@point(item, 'layout').to($layout)
 		@point(item, 'author').to($author)
 		@point(item, 'source').to($source)
