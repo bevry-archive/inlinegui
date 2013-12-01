@@ -467,16 +467,13 @@ class Pointer
 		@setConfig({element})
 		@
 
-point = (model, attributes...) ->
-	return new Pointer({model, attributes})
-
 
 # =====================================
 ## Controllers/Views
 
 class Controller extends Spine.Controller
-	point: (args...) ->
-		pointer = point(args...)
+	point: (model, attributes...) ->
+		pointer = new Pointer({model, attributes})
 		(@pointers ?= []).push(pointer)
 		return pointer
 
