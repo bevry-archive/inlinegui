@@ -468,11 +468,6 @@ class FileEditItem extends Controller
 		{item, $el, $source, $date, $title, $layout, $author, $previewbar, $source} = @
 
 		# Apply
-		$el
-			.addClass('file-edit-item-'+item.cid)
-			.data('item', item)
-			.data('controller', @)
-
 		$author.empty().append(
 			@getCollectionSelectValues('authors').concat @getOtherSelectValues('author')
 		)
@@ -480,16 +475,25 @@ class FileEditItem extends Controller
 			@getCollectionSelectValues('layouts').concat @getOtherSelectValues('author')
 		)
 
-		@point(item, 'url').to($previewbar).using ({$el, item}) ->
-			$el.attr('src': item.get('site').get('url')+item.get('url'))
-		@point(item, 'layout').to($layout)
-		@point(item, 'author').to($author)
-		@point(item, 'source').to($source)
-		@point(item, 'date').to($date).using ({$el, value}) ->
-			if value?
-				$el.val moment(value).format('YYYY-MM-DD')
-		@point(item, 'title', 'filename').to($title).using ({$el, item}) ->
-			$el.val(item.get('title') or item.get('filename'))
+		@point(item, 'layout').to($layout).bind()
+		@point(item, 'author').to($author).bind()
+		@point(item, 'source').to($source).bind()
+
+		@point(item, 'url').to($previewbar)
+			.using {$el, item}) ->
+				$el.attr('src': item.get('site').get('url')+item.get('url'))
+			.bind()
+
+		@point(item, 'date').to($date)
+			.using ({$el, value}) ->
+				if value?
+					$el.val moment(value).format('YYYY-MM-DD')
+			.bind()
+
+		@point(item, 'title', 'filename').to($title)
+			.using ({$el, item}) ->
+				$el.val(item.get('title') or item.get('filename'))
+			.bind()
 
 		# Editor
 		@editor = CodeMirror.fromTextArea($source.get(0), {
@@ -540,20 +544,26 @@ class FileListItem extends Controller
 		{item, $el, $title, $tags, $date} = @
 
 		# Apply
-		@point(item, 'title', 'relativePath').to($title).using ({$el, item}) ->
-			title = item.get('title')
-			relativePath = item.get('relativePath')
-			if title
-				$el.text(title)
-				$el.append('<br>'+relativePath)
-			else
-				$el.text(relativePath)
+		@point(item, 'title', 'relativePath').to($title)
+			.using ({$el, item}) ->
+				title = item.get('title')
+				relativePath = item.get('relativePath')
+				if title
+					$el.text(title)
+					$el.append('<br>'+relativePath)
+				else
+					$el.text(relativePath)
+			.bind()
 
-		@point(item, 'tags').to($tags).using ({$el, value}) ->
-			$el.text (value or []).join(', ') or ''
+		@point(item, 'tags').to($tags)
+			.using ({$el, value}) ->
+				$el.text (value or []).join(', ') or ''
+			.bind()
 
-		@point(item, 'date').to($date).using ({$el, value}) ->
-			$date.text value?.toLocaleDateString() or ''
+		@point(item, 'date').to($date)
+			.using ({$el, value}) ->
+				$date.text value?.toLocaleDateString() or ''
+			.bind()
 
 		# Chain
 		@
@@ -569,10 +579,6 @@ class SiteListItem extends Controller
 		{item, $el, $name} = @
 
 		# Apply
-		$el
-			.addClass('site-list-item-'+item.cid)
-			.data('item', item)
-			.data('controller', @)
 		$name.text item.get('name') or item.get('url') or ''
 
 		# Chain
@@ -596,6 +602,7 @@ class App extends Controller
 		'.content-table.files': '$filesList'
 		'.content-table.sites': '$sitesList'
 		'.content-row-file': '$files'
+		'.content-row-site': '$sites'
 
 	events:
 		'click .sites .content-cell-name': 'clickSite'
@@ -623,14 +630,12 @@ class App extends Controller
 		@$el.on 'click', '.collection-list', (e) ->
 			$(e.target).blur()
 
-		# Sites
-		#@point(Site.collection).event('add remove')
-		Site.collection.bind('add',      @updateSite)
-		Site.collection.bind('remove',   @destroySite)
-		Site.collection.bind('reset',    @updateSites)
-
 		# Clean
+		@$sites.remove()
 		@$files.remove()
+
+		# Update the site listing
+		@point(Site.collection, SiteListItem).to(@$sitesList).bind()
 
 		# Apply
 		@onWindowResize()
@@ -768,8 +773,8 @@ class App extends Controller
 							})
 						$collectionList.val(@currentFileCollection.get('name'))
 
-					# Updat ethe file listing
-					@point(files, FileListItem).to(@$filesList)
+					# Update the file listing
+					@point(files, FileListItem).to(@$filesList).bind()
 
 					# Apply
 					@setAppMode('site')
@@ -847,83 +852,6 @@ class App extends Controller
 
 		# Chain
 		@
-
-
-	# ---------------------------------
-	# View Updates
-
-	destroyController: ({findMethod}, item) =>
-		controller = findMethod(item)
-		controller?.destroy()
-		return controller
-
-	updateController: ({$list, klass, findMethod}, item) =>
-		controller = findMethod(item)
-		if controller?
-			controller.render()
-		else
-			controller = new klass({item})
-				.render()
-				.appendTo($list)
-		return controller
-
-	updateControllers: ({$items, updateMethod}, items) =>
-		# remove items that we no longer have
-		$items.each ->
-			$el = $(@)
-			if $el.data('item') not in items
-				$el.data('controller').destroy()
-
-		# update items we still have
-		controllers = []
-		for item in (items.models or items or [])
-			controllers.push updateMethod(item)
-
-		# Return
-		return controllers
-
-	###
-	findFile: (item) =>
-		controller = $(".file-list-item-#{item.cid}:first").data('controller')
-		return controller
-
-	destroyFile: (item) =>
-		findMethod = @findFile
-		return @destroyController({findMethod}, item)
-
-		#@point(Site.collection, FileListItem).to(@$filesList)
-		#@point(Site.collection).to(@$filesList).using(FileL)
-
-	updateFile: (item) =>
-		$list = @$filesList
-		klass = FileListItem
-		findMethod = @findFile
-		return @updateController({$list, klass, findMethod}, item)
-
-	updateFiles: (items) =>
-		$items = @$('.content-row-file')
-		updateMethod = @updateFile
-		return @updateControllers({$items, updateMethod}, items)
-	###
-
-	findSite: (item) =>
-		controller = $(".site-list-item-#{item.cid}:first").data('controller')
-		return controller
-
-	destroySite: (item) =>
-		findMethod = @findSite
-		return @destroyController({findMethod}, item)
-
-	updateSite: (item) =>
-		$list = @$sitesList
-		klass = SiteListItem
-		findMethod = @findSite
-		return @updateController({$list, klass, findMethod}, item)
-
-	updateSites: (items) =>
-		$items = @$('.content-row-site')
-		updateMethod = @updateSite
-		return @updateControllers({$items, updateMethod}, items)
 
 
 
@@ -1111,7 +1039,7 @@ class App extends Controller
 		# Prepare
 		$target = $(e.target)
 		$row = $target.parents('.content-row:first')
-		item = $row.data('item')
+		item = $row.data('model')
 
 		# Action
 		if $target.parents().andSelf().filter('.button-delete').length is 1

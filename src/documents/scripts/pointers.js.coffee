@@ -5,6 +5,8 @@ extendr = require('extendr')
 
 class Pointer
 	config: null
+	bound: false
+	bindTimeout: null
 
 	constructor: (item, args...) ->
 		@config ?= {}
@@ -84,11 +86,15 @@ class Pointer
 				Controller: args[0]
 			)
 
-		setTimeout(@bind, 0)
+		@bindTimeout = setTimeout(@bind, 0)
 
 		@
 
 	bind: =>
+		(clearTimeout(@bindTimeout); @bindTimeout = null)  if @bindTimeout
+		return @  if @bound is true
+		@bound = true
+
 		@config.element.data('pointer')?.destroy()
 		@config.element.data('pointer', @)
 
@@ -105,6 +111,10 @@ class Pointer
 		@
 
 	unbind: =>
+		(clearTimeout(@bindTimeout); @bindTimeout = null)  if @bindTimeout
+		return @  if @bound is false
+		@bound = false
+
 		@config.item.off('change:'+attribute, @changeAttributeHandler)  for attribute in @config.attributes  if @config.attributes
 		@config.item
 			.off('add',    @addHandler)
