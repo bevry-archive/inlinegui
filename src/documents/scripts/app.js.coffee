@@ -480,7 +480,7 @@ class FileEditItem extends Controller
 		@point(item, 'source').to($source).bind()
 
 		@point(item, 'url').to($previewbar)
-			.using {$el, item}) ->
+			.using ({$el, item}) ->
 				$el.attr('src': item.get('site').get('url')+item.get('url'))
 			.bind()
 
@@ -797,7 +797,7 @@ class App extends Controller
 						@editView = null
 
 					# Prepare
-					{$el, $toggleMeta, $links, $linkPage, $toggles, $togglePreview} = @
+					{$el, $toggleMeta, $links, $linkPage, $toggles, $toggleMeta, $togglePreview} = @
 					title = @currentFile.get('title') or @currentFile.get('filename')
 
 					# View
@@ -811,11 +811,12 @@ class App extends Controller
 
 					# Bars
 					$toggles.removeClass('active')
-
+					$toggleMeta.addClass('active')
 					$togglePreview.addClass('active')
+					editView.$metabar.show()
 					editView.$previewbar.show()
-
 					editView.$sourcebar.hide()
+
 					###
 					if $target.hasClass('button-edit')
 						$toggleMeta.addClass('active')
@@ -1151,7 +1152,7 @@ class App extends Controller
 		# Chain
 		@
 
-app = new App(
+window.app = app = new App(
 	el: $('.app')
 )
 $(window)
