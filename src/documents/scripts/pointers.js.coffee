@@ -42,11 +42,15 @@ class Pointer
 
 					when 'remove'
 						$el = @getModelElement(model)
-						$el.data('controller').destroy()
-						$el.remove()
+						if $el.data('controller')?.destroy()
+							$el.remove()
 
 					when 'reset'
-						@config.element.empty()
+						@config.element.children().each ->
+							$el = $(@)
+							if $el.data('controller')?.destroy()
+								$el.remove()
+
 						for model in collection.models
 							@addHandler(model, collection, opts)
 
@@ -85,6 +89,9 @@ class Pointer
 		@
 
 	bind: =>
+		@config.element.data('pointer')?.destroy()
+		@config.element.data('pointer', @)
+
 		@unbind()
 		if @config.type is 'model'
 			@config.item.on('change:'+attribute, @changeAttributeHandler)  for attribute in @config.attributes  if @config.attributes
@@ -105,14 +112,14 @@ class Pointer
 			.off('reset',  @resetHandler)
 		@
 
-	destroy: ->
+	destroy: (opts) =>
 		@unbind()
 		if @config.type is 'collection'
-			@config.element.children().each (el) ->
-				$el = $(el)
-				$el.data('controller')?.destroy()
-				$el.remove()
-		@config.element.remove()
+			@config.element.children().each ->
+				$el = $(@)
+				if $el.data('controller')?.destroy()
+					$el.remove()
+		#@config.element.remove()
 		@
 
 	setConfig: (config={}) ->

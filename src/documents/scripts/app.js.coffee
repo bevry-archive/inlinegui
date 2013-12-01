@@ -540,11 +540,6 @@ class FileListItem extends Controller
 		{item, $el, $title, $tags, $date} = @
 
 		# Apply
-		$el
-			.addClass('file-list-item-'+item.cid)
-			.data('item', item)
-			.data('controller', @)
-
 		@point(item, 'title', 'relativePath').to($title).using ({$el, item}) ->
 			title = item.get('title')
 			relativePath = item.get('relativePath')
@@ -600,6 +595,7 @@ class App extends Controller
 		'.collection-list': '$collectionList'
 		'.content-table.files': '$filesList'
 		'.content-table.sites': '$sitesList'
+		'.content-row-file': '$files'
 
 	events:
 		'click .sites .content-cell-name': 'clickSite'
@@ -632,6 +628,9 @@ class App extends Controller
 		Site.collection.bind('add',      @updateSite)
 		Site.collection.bind('remove',   @destroySite)
 		Site.collection.bind('reset',    @updateSites)
+
+		# Clean
+		@$files.remove()
 
 		# Apply
 		@onWindowResize()
@@ -770,8 +769,7 @@ class App extends Controller
 						$collectionList.val(@currentFileCollection.get('name'))
 
 					# Updat ethe file listing
-					@point(files, FileListItem).to(@$filesList.empty())
-					#@updateFiles(files)
+					@point(files, FileListItem).to(@$filesList)
 
 					# Apply
 					@setAppMode('site')
@@ -1154,7 +1152,7 @@ class App extends Controller
 		# Prepare
 		$target = $(e.target)
 		$row = $target.parents('.content-row:first')
-		item = $row.data('item')
+		item = $row.data('model')
 
 		# Action
 		if $target.parents().andSelf().filter('.button-delete').length is 1
