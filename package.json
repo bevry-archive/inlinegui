@@ -65,7 +65,8 @@
     "browserify": "~2.35.4",
     "safeps": "~2.2.9",
     "backbone": "~1.1.0",
-    "moment": "~2.4.0"
+    "moment": "~2.4.0",
+    "extendr": "~2.1.0"
   },
   "devDependencies": {
     "docpad-plugin-livereload": "~2.5.3",

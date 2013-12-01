@@ -34,6 +34,7 @@ extractSyncOpts = (args) ->
 moment = require('moment')
 QueryEngine = require('query-engine')
 {Task, TaskGroup} = require('taskgroup')
+{Pointer} = require('./pointers')
 
 
 # =====================================
@@ -418,62 +419,11 @@ window.File = File
 
 
 # =====================================
-## Pointers
-
-class Pointer
-	config: null
-
-	constructor: (config) ->
-		@config ?= {}
-
-		@config.handler ?= ($el, model, value) ->
-			value ?= ''
-			if $el.is(':input')
-				$el.val(value)
-			else
-				$el.text(value)
-
-		@setConfig(config)
-
-		setTimeout(
-			=>
-				@config.model.on('change:'+attribute, @handler)  for attribute in @config.attributes
-				@handler()
-			0
-		)
-
-		@
-
-	destroy: ->
-		@config.model.off('change:'+attribute, @handler)  for attribute in @config.attributes
-		@
-
-	setConfig: (config={}) ->
-		for own key,value of config
-			@config[key] = value
-		@
-
-	handler: (model, value) =>
-		model ?= @config.model
-		value ?= model.get([@config.attributes[0]])
-		@config.handler(@config.element, model, value)
-		return true
-
-	using: (handler) ->
-		@setConfig({handler})
-		@
-
-	to: (element) ->
-		@setConfig({element})
-		@
-
-
-# =====================================
 ## Controllers/Views
 
 class Controller extends Spine.Controller
-	point: (model, attributes...) ->
-		pointer = new Pointer({model, attributes})
+	point: (args...) ->
+		pointer = new Pointer(args...)
 		(@pointers ?= []).push(pointer)
 		return pointer
 
@@ -530,15 +480,15 @@ class FileEditItem extends Controller
 			@getCollectionSelectValues('layouts').concat @getOtherSelectValues('author')
 		)
 
-		@point(item, 'url').to($previewbar).using ($el, item, value) ->
+		@point(item, 'url').to($previewbar).using ({$el, item}) ->
 			$el.attr('src': item.get('site').get('url')+item.get('url'))
 		@point(item, 'layout').to($layout)
 		@point(item, 'author').to($author)
 		@point(item, 'source').to($source)
-		@point(item, 'date').to($date).using ($el, item, value) ->
+		@point(item, 'date').to($date).using ({$el, value}) ->
 			if value?
 				$el.val moment(value).format('YYYY-MM-DD')
-		@point(item, 'title', 'filename').to($title).using ($el, item, value) ->
+		@point(item, 'title', 'filename').to($title).using ({$el, item}) ->
 			$el.val(item.get('title') or item.get('filename'))
 
 		# Editor
@@ -595,7 +545,7 @@ class FileListItem extends Controller
 			.data('item', item)
 			.data('controller', @)
 
-		@point(item, 'title', 'relativePath').to($title).using ($el, item, value) ->
+		@point(item, 'title', 'relativePath').to($title).using ({$el, item}) ->
 			title = item.get('title')
 			relativePath = item.get('relativePath')
 			if title
@@ -604,10 +554,10 @@ class FileListItem extends Controller
 			else
 				$el.text(relativePath)
 
-		@point(item, 'tags').to($tags).using ($el, item, value) ->
+		@point(item, 'tags').to($tags).using ({$el, value}) ->
 			$el.text (value or []).join(', ') or ''
 
-		@point(item, 'date').to($date).using ($el, item, value) ->
+		@point(item, 'date').to($date).using ({$el, value}) ->
 			$date.text value?.toLocaleDateString() or ''
 
 		# Chain
@@ -678,6 +628,7 @@ class App extends Controller
 			$(e.target).blur()
 
 		# Sites
+		#@point(Site.collection).event('add remove')
 		Site.collection.bind('add',      @updateSite)
 		Site.collection.bind('remove',   @destroySite)
 		Site.collection.bind('reset',    @updateSites)
@@ -819,7 +770,8 @@ class App extends Controller
 						$collectionList.val(@currentFileCollection.get('name'))
 
 					# Updat ethe file listing
-					@updateFiles(files)
+					@point(files, FileListItem).to(@$filesList.empty())
+					#@updateFiles(files)
 
 					# Apply
 					@setAppMode('site')
@@ -932,7 +884,7 @@ class App extends Controller
 		# Return
 		return controllers
 
-
+	###
 	findFile: (item) =>
 		controller = $(".file-list-item-#{item.cid}:first").data('controller')
 		return controller
@@ -940,6 +892,9 @@ class App extends Controller
 	destroyFile: (item) =>
 		findMethod = @findFile
 		return @destroyController({findMethod}, item)
+
+		#@point(Site.collection, FileListItem).to(@$filesList)
+		#@point(Site.collection).to(@$filesList).using(FileL)
 
 	updateFile: (item) =>
 		$list = @$filesList
@@ -951,7 +906,7 @@ class App extends Controller
 		$items = @$('.content-row-file')
 		updateMethod = @updateFile
 		return @updateControllers({$items, updateMethod}, items)
-
+	###
 
 	findSite: (item) =>
 		controller = $(".site-list-item-#{item.cid}:first").data('controller')
@@ -1164,7 +1119,6 @@ class App extends Controller
 		if $target.parents().andSelf().filter('.button-delete').length is 1
 			# Delete
 			controller = $row.data('controller')
-			debugger
 			controller.item.destroy()
 			controller.destroy()
 		else
