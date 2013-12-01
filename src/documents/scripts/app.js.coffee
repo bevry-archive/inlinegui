@@ -490,7 +490,7 @@ class FileEditItem extends Controller
 		@point(item).attributes('layout').to($layout).bind()
 		@point(item).attributes('author').to($author).bind()
 		@point(item).attributes('source').to($source).bind()
-		@point(item).attributes('title', 'filename').to($title).update().bind()
+		@point(item).attributes('title', 'name', 'filename').to($title).update().bind()
 
 		@point(item)
 			.attributes('url')
@@ -540,10 +540,10 @@ class FileListItem extends Controller
 
 		# Apply
 		@point(item)
-			.attributes('title', 'relativePath')
+			.attributes('title', 'name', 'relativePath')
 			.to($title)
 			.using ({$el, item}) ->
-				title = item.get('title')
+				title = item.get('title') or item.get('name')
 				relativePath = item.get('relativePath')
 				if title
 					$el.text(title)
@@ -805,7 +805,7 @@ class App extends Controller
 					@editView = editView = @point(@currentFile).controller(FileEditItem).to(@$pageEditContainer).bind().getController()
 
 					# Apply
-					@point(@currentFile).attributes('title', 'filename').to($linkPage)
+					@point(@currentFile).attributes('title', 'name', 'filename').to($linkPage)
 
 					# Bars
 					$toggles.removeClass('active')
