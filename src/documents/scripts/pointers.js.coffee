@@ -8,14 +8,21 @@ class Pointer
 	bound: false
 	bindTimeout: null
 
+	fallbackValue: ->
+		value = null
+		for attribute in @config.attributes
+			if (value = @config.item.get(attribute))
+				break
+		return value
+
 	constructor: (item, args...) ->
 		@config ?= {}
 
 		type = if item.length? then 'collection' else 'model'
 
 		if type is 'model'
-			@config.handler ?= ({$el, value}) ->
-				value ?= ''
+			@config.handler ?= ({$el, value}) =>
+				value ?= @fallbackValue()
 				if $el.is(':input')
 					$el.val(value)
 				else
@@ -101,8 +108,11 @@ class Pointer
 		@unbind()
 		if @config.type is 'model'
 			@config.item.on('change:'+attribute, @changeAttributeHandler)  for attribute in @config.attributes  if @config.attributes
-			@changeAttributeHandler(@config.model, @config.item.get(@config.attributes[0]) , {})
+			@changeAttributeHandler(@config.model, null, {})
+			@config.element.on('change', @updateHandler)  if @config.update is true
+
 		else
+			@config.element.off('change', @updateHandler)
 			@config.item
 				.on('add',    @addHandler)
 				.on('remove', @removeHandler)
@@ -138,6 +148,12 @@ class Pointer
 		@
 
 
+	updateHandler: (e) =>
+		attrs = {}
+		attrs[@config.attributes[0]] = @config.element.val()
+		@config.item.set(attrs)
+		@
+
 	addHandler: (model, collection, opts) =>
 		@callUserHandler extendr.extend(opts, {event:'add', model, collection})
 	removeHandler: (model, collection, opts) =>
@@ -145,6 +161,7 @@ class Pointer
 	resetHandler: (collection, opts) =>
 		@callUserHandler extendr.extend(opts, {event:'reset', collection})
 	changeAttributeHandler: (model, value, opts) =>
+		value ?= @fallbackValue()
 		@callUserHandler extendr.extend(opts, {event:'change', model, value})
 
 	callUserHandler: (opts) =>
@@ -159,6 +176,11 @@ class Pointer
 	getModelController: (model) =>
 		return @getModelElement(model)?.data('controller') ? null
 
+
+	update: (update) ->
+		update ?= true
+		@setConfig({update})
+		@
 
 	using: (handler) ->
 		@setConfig({handler})

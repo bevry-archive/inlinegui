@@ -369,6 +369,15 @@ class File extends Model
 
 		@
 
+	reset: ->
+		data = {}
+		for own key,value of @attributes
+			data[key] = null
+		for own key,value of @lastSync
+			data[key] = value
+		@set(data)
+		@
+
 	toJSON: ->
 		return _.omit(super(), ['site'])
 
@@ -383,6 +392,9 @@ class File extends Model
 
 		# Fix date
 		data.date = new Date(data.date)  if data.date
+
+		# Store data
+		@lastSync = data
 
 		# Apply the received data to the model
 		return data
@@ -491,8 +503,7 @@ class FileEditItem extends Controller
 			.bind()
 
 		@point(item, 'title', 'filename').to($title)
-			.using ({$el, item}) ->
-				$el.val(item.get('title') or item.get('filename'))
+			.update()
 			.bind()
 
 		# Editor
@@ -505,30 +516,13 @@ class FileEditItem extends Controller
 
 	cancel: (opts={}, next) ->
 		opts.next ?= next  if next
-
-		# Prepare
-		{item} = @
-
-		# Sync
-		item.sync(opts)
-
-		# Chain
+		@item.reset(opts)
+		opts.next?()
 		@
 
 	save: (opts={}, next) ->
 		opts.next ?= next  if next
-
-		# Prepare
-		{item, $el, $title, $date, $author, $previewbar, $source} = @
-		title = $title.val()
-
-		# Apply
-		item.set({title})
-
-		# Sync
-		item.sync(opts)
-
-		# Chain
+		@item.sync(opts)
 		@
 
 class FileListItem extends Controller
@@ -807,7 +801,8 @@ class App extends Controller
 					editView.render()
 
 					# Apply
-					$linkPage.text(title)
+					@point(@currentFile, 'title', 'filename').to($linkPage)
+					#$linkPage.text(title)
 
 					# Bars
 					$toggles.removeClass('active')
