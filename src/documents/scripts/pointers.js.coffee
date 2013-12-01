@@ -8,90 +8,15 @@ class Pointer
 	bound: false
 	bindTimeout: null
 
-	fallbackValue: ->
-		value = null
-		for attribute in @config.attributes
-			if (value = @config.item.get(attribute))
-				break
-		return value
-
-	constructor: (item, args...) ->
+	constructor: (item) ->
 		@config ?= {}
 
 		type = if item.length? then 'collection' else 'model'
 
-		if type is 'model'
-			@config.handler ?= ({$el, value}) =>
-				value ?= @fallbackValue()
-				if $el.is(':input')
-					$el.val(value)
-				else
-					$el.text(value)
-
-			@setConfig(
-				type: type
-				item: item
-				attributes: args
-			)
-		else
-
-			@config.handler ?= (opts) =>
-				{model, event, collection} = opts
-				switch event
-					when 'add'
-						controller = new @config.Controller(item: model)
-
-						controller.$el
-							.data('controller', controller)
-							.data('model', model)
-
-						controller
-							.render()
-							.appendTo(@config.element)
-
-					when 'remove'
-						$el = @getModelElement(model)
-						if $el.data('controller')?.destroy()
-							$el.remove()
-
-					when 'reset'
-						@config.element.children().each ->
-							$el = $(@)
-							if $el.data('controller')?.destroy()
-								$el.remove()
-
-						for model in collection.models
-							@addHandler(model, collection, opts)
-
-						###
-						cidsDesired = collection.pluck('cid')
-						cidsActual = []
-
-						@config.element.children().each (el) ->
-							$el = $(el)
-
-							cid = $el.data('model').cid
-							cidsActual.push(cid)
-
-							if cid in cidsDesired
-								$el.data('controller').render()
-							else
-								$el.data('controller').destroy()
-								$el.remove()
-
-						for model in collection.models
-							if model.cid in cidsActual
-								# ignore, we already updated it
-							else
-								# add it, it is new
-								@addHandler(model, collection, opts)
-						###
-
-			@setConfig(
-				type: type
-				item: item
-				Controller: args[0]
-			)
+		@setConfig(
+			type: type
+			item: item
+		)
 
 		@bindTimeout = setTimeout(@bind, 0)
 
@@ -106,18 +31,27 @@ class Pointer
 		@config.element.data('pointer', @)
 
 		@unbind()
+
 		if @config.type is 'model'
-			@config.item.on('change:'+attribute, @changeAttributeHandler)  for attribute in @config.attributes  if @config.attributes
-			@changeAttributeHandler(@config.model, null, {})
-			@config.element.on('change', @updateHandler)  if @config.update is true
+			if @config.attributes
+				@config.handler ?= @defaultModelHandler
+				@config.item.on('change:'+attribute, @changeAttributeHandler)  for attribute in @config.attributes
+				@changeAttributeHandler(@config.model, null, {})
+				if @config.update is true
+					@config.element.on('change', @updateHandler)
+
+			if @config.Controller
+				@createControllerViaModel(@config.item)
 
 		else
-			@config.element.off('change', @updateHandler)
-			@config.item
-				.on('add',    @addHandler)
-				.on('remove', @removeHandler)
-				.on('reset',  @resetHandler)
-			@resetHandler(@config.item.models, @config.item, {})
+			if @config.Controller
+				@config.handler ?= @defaultCollectionHandler
+				@config.element.off('change', @updateHandler)
+				@config.item
+					.on('add',    @addHandler)
+					.on('remove', @removeHandler)
+					.on('reset',  @resetHandler)
+				@resetHandler(@config.item.models, @config.item, {})
 		@
 
 	unbind: =>
@@ -171,15 +105,83 @@ class Pointer
 		@config.handler(opts)
 		return true
 
+	defaultModelHandler: ({$el, value}) =>
+		value ?= @fallbackValue()
+		if $el.is(':input')
+			$el.val(value)
+		else
+			$el.text(value)
+		return true
+
+	createControllerViaModel: (model) =>
+		model ?= @config.item
+
+		controller = new @config.Controller(item: model)
+
+		controller.$el
+			.data('controller', controller)
+			.data('model', model)
+			.addClass("model-#{model.cid}")
+
+		controller
+			.render()
+			.appendTo(@config.element)
+
+		return controller
+
+	destroyControllerViaElement: (element) =>
+		$el = element
+		if $el.data('controller')?.destroy()
+			$el.remove()
+		@
+
+	defaultCollectionHandler: (opts) =>
+		{model, event, collection} = opts
+		switch event
+			when 'add'
+				@createControllerViaModel(model)
+
+			when 'remove'
+				$el = @getModelElement(model)
+				@destroyControllerViaElement($el)
+
+			when 'reset'
+				@config.element.children().each =>
+					@destroyControllerViaElement $(@)
+
+				for model in collection.models
+					@createControllerViaModel(model)
+
+		return true
+
+	fallbackValue: ->
+		value = null
+		for attribute in @config.attributes
+			if (value = @config.item.get(attribute))
+				break
+		return value
+
 	getModelElement: (model) =>
 		return @config.element.find(".model-#{model.cid}:first") ? null
 	getModelController: (model) =>
 		return @getModelElement(model)?.data('controller') ? null
 
+	getElement: =>
+		return @getModelElement(@config.item)
+	getController: =>
+		return @getElement().data('controller')
 
-	update: (update) ->
-		update ?= true
+	update: ->
+		update = true
 		@setConfig({update})
+		@
+
+	attributes: (attributes...) ->
+		@setConfig({attributes})
+		@
+
+	controller: (Controller) ->
+		@setConfig({Controller})
 		@
 
 	using: (handler) ->

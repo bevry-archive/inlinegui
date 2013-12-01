@@ -68,6 +68,7 @@ aside '.app', ->
 					'Cancel'
 
 
+	aside '.site-list-container', -> \
 	section '.site-list.main.show-admin', ->
 		header ->
 			span '.title', ->
@@ -93,6 +94,7 @@ aside '.app', ->
 								span '.icon.icon-trash', ->
 								text 'Delete'
 
+	aside '.page-list-container', -> \
 	section '.page-list.main.show-site', ->
 		header ->
 			span '.title', ->
@@ -134,6 +136,7 @@ aside '.app', ->
 					div '.content-cell.content-cell-date', ->
 						'File date'
 
+	aside '.page-edit-container', -> \
 	section '.page-edit.show-page', ->
 		section '.page-source.main', ->
 			header '.title', ->

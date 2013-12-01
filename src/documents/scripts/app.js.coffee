@@ -487,23 +487,24 @@ class FileEditItem extends Controller
 			@getCollectionSelectValues('layouts').concat @getOtherSelectValues('author')
 		)
 
-		@point(item, 'layout').to($layout).bind()
-		@point(item, 'author').to($author).bind()
-		@point(item, 'source').to($source).bind()
+		@point(item).attributes('layout').to($layout).bind()
+		@point(item).attributes('author').to($author).bind()
+		@point(item).attributes('source').to($source).bind()
+		@point(item).attributes('title', 'filename').to($title).update().bind()
 
-		@point(item, 'url').to($previewbar)
+		@point(item)
+			.attributes('url')
+			.to($previewbar)
 			.using ({$el, item}) ->
 				$el.attr('src': item.get('site').get('url')+item.get('url'))
 			.bind()
 
-		@point(item, 'date').to($date)
+		@point(item)
+			.attributes('date')
+			.to($date)
 			.using ({$el, value}) ->
 				if value?
 					$el.val moment(value).format('YYYY-MM-DD')
-			.bind()
-
-		@point(item, 'title', 'filename').to($title)
-			.update()
 			.bind()
 
 		# Editor
@@ -538,7 +539,9 @@ class FileListItem extends Controller
 		{item, $el, $title, $tags, $date} = @
 
 		# Apply
-		@point(item, 'title', 'relativePath').to($title)
+		@point(item)
+			.attributes('title', 'relativePath')
+			.to($title)
 			.using ({$el, item}) ->
 				title = item.get('title')
 				relativePath = item.get('relativePath')
@@ -549,12 +552,16 @@ class FileListItem extends Controller
 					$el.text(relativePath)
 			.bind()
 
-		@point(item, 'tags').to($tags)
+		@point(item)
+			.attributes('tags')
+			.to($tags)
 			.using ({$el, value}) ->
 				$el.text (value or []).join(', ') or ''
 			.bind()
 
-		@point(item, 'date').to($date)
+		@point(item)
+			.attributes('date')
+			.to($date)
 			.using ({$el, value}) ->
 				$date.text value?.toLocaleDateString() or ''
 			.bind()
@@ -597,6 +604,7 @@ class App extends Controller
 		'.content-table.sites': '$sitesList'
 		'.content-row-file': '$files'
 		'.content-row-site': '$sites'
+		'.page-edit-container': '$pageEditContainer'
 
 	events:
 		'click .sites .content-cell-name': 'clickSite'
@@ -629,7 +637,7 @@ class App extends Controller
 		@$files.remove()
 
 		# Update the site listing
-		@point(Site.collection, SiteListItem).to(@$sitesList).bind()
+		@point(Site.collection).controller(SiteListItem).to(@$sitesList).bind()
 
 		# Apply
 		@onWindowResize()
@@ -768,7 +776,7 @@ class App extends Controller
 						$collectionList.val(@currentFileCollection.get('name'))
 
 					# Update the file listing
-					@point(files, FileListItem).to(@$filesList).bind()
+					@point(files).controller(FileListItem).to(@$filesList).bind()
 
 					# Apply
 					@setAppMode('site')
@@ -792,17 +800,12 @@ class App extends Controller
 
 					# Prepare
 					{$el, $toggleMeta, $links, $linkPage, $toggles, $toggleMeta, $togglePreview} = @
-					title = @currentFile.get('title') or @currentFile.get('filename')
 
 					# View
-					@editView = editView = new FileEditItem({
-						item: @currentFile
-					})
-					editView.render()
+					@editView = editView = @point(@currentFile).controller(FileEditItem).to(@$pageEditContainer).bind().getController()
 
 					# Apply
-					@point(@currentFile, 'title', 'filename').to($linkPage)
-					#$linkPage.text(title)
+					@point(@currentFile).attributes('title', 'filename').to($linkPage)
 
 					# Bars
 					$toggles.removeClass('active')
@@ -811,14 +814,6 @@ class App extends Controller
 					editView.$metabar.show()
 					editView.$previewbar.show()
 					editView.$sourcebar.hide()
-
-					###
-					if $target.hasClass('button-edit')
-						$toggleMeta.addClass('active')
-						editView.$metabar.show()
-					else
-						editView.$metabar.hide()
-					###
 
 					# View
 					editView.appendTo($el)
