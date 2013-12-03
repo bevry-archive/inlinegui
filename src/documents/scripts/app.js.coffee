@@ -36,6 +36,7 @@ QueryEngine = require('query-engine')
 {Task, TaskGroup} = require('taskgroup')
 {Pointer} = require('./pointers')
 {View} = require('./view')
+{Model} = window.Backbone
 {Route} = require('./route')
 
 
@@ -44,7 +45,7 @@ QueryEngine = require('query-engine')
 
 # Define the Base Model that uses Backbone.js
 
-class Model extends Backbone.Model
+class Model extends Model
 
 
 # Define the Base Collection that uses QueryEngine.

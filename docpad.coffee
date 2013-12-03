@@ -119,6 +119,8 @@ docpadConfig = {
 					"#{rootPath}/node_modules/.bin/browserify"
 					"-i", "backbone"
 					"-i", "exoskeleton"
+					"-i", "underscore"
+					"-i", "jquery"
 					"#{outPath}/scripts/app.js"
 					"-o", "#{outPath}/scripts/app-bundled.js"
 				],
@@ -127,6 +129,8 @@ docpadConfig = {
 					"#{rootPath}/node_modules/.bin/browserify"
 					"-i", "backbone"
 					"-i", "exoskeleton"
+					"-i", "underscore"
+					"-i", "jquery"
 					"#{outPath}/scripts/inline.js"
 					"-o", "#{outPath}/scripts/inline-bundled.js"
 				]
