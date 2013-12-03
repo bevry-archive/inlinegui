@@ -68,12 +68,11 @@ class Pointer
 
 	destroy: (opts) =>
 		@unbind()
-		if @config.type is 'collection'
-			@config.element.children().each ->
-				$el = $(@)
-				if $el.data('controller')?.destroy()
-					$el.remove()
-		#@config.element.remove()
+
+		@config.element.children().each ->
+			$el = $(@)
+			$el.data('controller')?.destroy()
+
 		@
 
 	setConfig: (config={}) ->
@@ -131,8 +130,7 @@ class Pointer
 
 	destroyControllerViaElement: (element) =>
 		$el = element
-		if $el.data('controller')?.destroy()
-			$el.remove()
+		$el.data('controller')?.destroy()
 		@
 
 	defaultCollectionHandler: (opts) =>

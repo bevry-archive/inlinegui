@@ -811,7 +811,6 @@ class App extends Controller
 					editView.$sourcebar.hide()
 
 					# View
-					editView.$el.appendTo($el)
 					@onWindowResize()
 
 					# Apply

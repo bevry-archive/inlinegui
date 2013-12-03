@@ -48,6 +48,8 @@ class View
 
 	destroy: ->
 		@refreshEvents(bind: false)
+		@$el.remove()
+		@el = @$el = null
 		@
 
 module.exports = {View}
