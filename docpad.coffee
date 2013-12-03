@@ -63,8 +63,6 @@ docpadConfig = {
 
 				"//login.persona.org/include.js"
 
-				"/vendor/spine/lib/spine.js"
-				"/vendor/spine/lib/route.js"
 				'/scripts/app-bundled.js'
 			]
 

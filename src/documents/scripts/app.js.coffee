@@ -35,6 +35,8 @@ moment = require('moment')
 QueryEngine = require('query-engine')
 {Task, TaskGroup} = require('taskgroup')
 {Pointer} = require('./pointers')
+{View} = require('./view')
+{Route} = require('./route')
 
 
 # =====================================
@@ -433,7 +435,7 @@ window.File = File
 # =====================================
 ## Controllers/Views
 
-class Controller extends Spine.Controller
+class Controller extends View
 	point: (args...) ->
 		pointer = new Pointer(args...)
 		(@pointers ?= []).push(pointer)
@@ -442,8 +444,10 @@ class Controller extends Spine.Controller
 	destroy: ->
 		pointer.destroy()  for pointer in @pointers  if @pointers
 		@pointers = null
-		@release()
-		@
+		return super
+
+	navigate: (args...) ->
+		return Route.navigate.apply(Route, args)
 
 class FileEditItem extends Controller
 	el: $('.page-edit').remove().first().prop('outerHTML')
@@ -618,12 +622,6 @@ class App extends Controller
 		'submit .site-add-form': 'submitSite'
 		'click .site-add-form .button-cancel': 'submitSiteCancel'
 
-	routes:
-		'/': 'routeApp'
-		'/site/:siteId/': 'routeApp'
-		'/site/:siteId/:fileCollectionId': 'routeApp'
-		'/site/:siteId/:fileCollectionId/*filePath': 'routeApp'
-
 	constructor: ->
 		# Super
 		super
@@ -643,10 +641,6 @@ class App extends Controller
 		@onWindowResize()
 		@setAppMode('login')
 
-		# Setup routes
-		for key,value of @routes
-			@route(key, @[value])
-
 		# Login
 		currentUser = localStorage.getItem('currentUser') or null
 		navigator.id?.watch(
@@ -663,8 +657,17 @@ class App extends Controller
 		# Fetch our site data
 		wait 0, =>
 			Site.collection.fetch next: =>
+				# Bind routes
+				routes =
+					'/': 'routeApp'
+					'/site/:siteId/': 'routeApp'
+					'/site/:siteId/:fileCollectionId': 'routeApp'
+					'/site/:siteId/:fileCollectionId/*filePath': 'routeApp'
+				for own key,value of routes
+					Route.add(key, @[value].bind(@))
+
 				# Once loaded init routes and set us as ready
-				Spine.Route.setup()
+				Route.setup()
 
 				# Set the app as ready
 				@$el.addClass('app-ready')
@@ -676,10 +679,7 @@ class App extends Controller
 	# ---------------------------------
 	# Routing
 
-	routeApp: (opts) ->
-		# Prepare
-		{siteId, fileCollectionId, filePath} = opts
-
+	routeApp: ({siteId, fileCollectionId, filePath}) =>
 		# Has file
 		if filePath
 			@openApp({
@@ -793,11 +793,6 @@ class App extends Controller
 					throw err  if err
 					throw new Error('could not find file')  unless @currentFile
 
-					# Delete the old edit view
-					if @editView?
-						@editView.release()
-						@editView = null
-
 					# Prepare
 					{$el, $toggleMeta, $links, $linkPage, $toggles, $toggleMeta, $togglePreview} = @
 
@@ -816,7 +811,7 @@ class App extends Controller
 					editView.$sourcebar.hide()
 
 					# View
-					editView.appendTo($el)
+					editView.$el.appendTo($el)
 					@onWindowResize()
 
 					# Apply

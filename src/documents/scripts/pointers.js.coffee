@@ -125,7 +125,7 @@ class Pointer
 
 		controller
 			.render()
-			.appendTo(@config.element)
+			.$el.appendTo(@config.element)
 
 		return controller
 

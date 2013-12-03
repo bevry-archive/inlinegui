@@ -25,7 +25,7 @@ class App
 			tasks: [
 				(complete) -> dominject(
 						type: 'script'
-						url: '<%= @site.url+"vendor/ckeditor/ckeditor.js" %>'
+						url: '//cdnjs.cloudflare.com/ajax/libs/ckeditor/4.2/ckeditor.js'
 						next: complete
 					)
 			]
