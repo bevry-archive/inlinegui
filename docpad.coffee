@@ -54,8 +54,8 @@ docpadConfig = {
 				<script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.0/lodash.min.js"></script>
 				<script>window._ || document.write('<script defer="defer" src="/vendor/lodash.min.js"><\/sc'+'ript>')</script>
 
-				<script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.0/backbone-min.js"></script>
-				<script>window.Backbone || document.write('<script defer="defer" src="/vendor/backbone.min.js"><\/sc'+'ript>')</script>
+				<!--<script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.0/backbone-min.js"></script>-->
+				<script>window.Backbone || document.write('<script defer="defer" src="/vendor/backbone-custom.js"><\/sc'+'ript>')</script>
 
 				<script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/3.20.0/codemirror.min.js"></script>
 				<script>window.CodeMirror || document.write('<script defer="defer" src="/vendor/codemirror/codemirror.js"><\/sc'+'ript>')</script>
