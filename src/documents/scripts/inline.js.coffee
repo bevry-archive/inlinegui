@@ -9,11 +9,7 @@ return  if parent is self
 # Import
 {TaskGroup} = require('taskgroup')
 dominject = require('dominject')
-
-# Helpers
-wait = (delay,fn) -> setTimeout(fn, delay)
-waiter = (delay,fn) -> setInterval(fn, delay)
-sendMessage = (data) -> parent.postMessage(data, '*')
+{wait, waiter, sendMessage} = require('./util')
 
 # Define our application
 class App
