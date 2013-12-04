@@ -34,10 +34,10 @@ extractSyncOpts = (args) ->
 moment = require('moment')
 QueryEngine = require('query-engine')
 {Task, TaskGroup} = require('taskgroup')
-{Pointer} = require('./pointers')
-{View} = require('./view')
+{Pointer} = require('pointers')
+MiniView = require('miniview').View
 {Model} = window.Backbone
-{Route} = require('./route')
+{Route} = require('spine-route')
 
 
 # =====================================
@@ -436,7 +436,7 @@ window.File = File
 # =====================================
 ## Controllers/Views
 
-class Controller extends View
+class View extends MiniView
 	point: (args...) ->
 		pointer = new Pointer(args...)
 		(@pointers ?= []).push(pointer)
@@ -450,7 +450,7 @@ class Controller extends View
 	navigate: (args...) ->
 		return Route.navigate.apply(Route, args)
 
-class FileEditItem extends Controller
+class FileEditItem extends View
 	el: $('.page-edit').remove().first().prop('outerHTML')
 
 	elements:
@@ -531,7 +531,7 @@ class FileEditItem extends Controller
 		@item.sync(opts)
 		@
 
-class FileListItem extends Controller
+class FileListItem extends View
 	el: $('.content-table.files .content-row:last').remove().first().prop('outerHTML')
 
 	elements:
@@ -574,7 +574,7 @@ class FileListItem extends Controller
 		# Chain
 		@
 
-class SiteListItem extends Controller
+class SiteListItem extends View
 	el: $('.content-table.sites .content-row:last').remove().first().prop('outerHTML')
 
 	elements:
@@ -591,7 +591,7 @@ class SiteListItem extends Controller
 		@
 
 
-class App extends Controller
+class App extends View
 	# ---------------------------------
 	# Constructor
 
@@ -636,7 +636,7 @@ class App extends Controller
 		@$files.remove()
 
 		# Update the site listing
-		@point(Site.collection).controller(SiteListItem).to(@$sitesList).bind()
+		@point(Site.collection).view(SiteListItem).to(@$sitesList).bind()
 
 		# Apply
 		@onWindowResize()
@@ -777,7 +777,7 @@ class App extends Controller
 						$collectionList.val(@currentFileCollection.get('name'))
 
 					# Update the file listing
-					@point(files).controller(FileListItem).to(@$filesList).bind()
+					@point(files).view(FileListItem).to(@$filesList).bind()
 
 					# Apply
 					@setAppMode('site')
@@ -798,7 +798,7 @@ class App extends Controller
 					{$el, $toggleMeta, $links, $linkPage, $toggles, $toggleMeta, $togglePreview} = @
 
 					# View
-					@editView = editView = @point(@currentFile).controller(FileEditItem).to(@$pageEditContainer).bind().getController()
+					@editView = editView = @point(@currentFile).view(FileEditItem).to(@$pageEditContainer).bind().getView()
 
 					# Apply
 					@point(@currentFile).attributes('title', 'name', 'filename').to($linkPage)

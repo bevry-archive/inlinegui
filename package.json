@@ -65,7 +65,10 @@
     "browserify": "~2.35.4",
     "safeps": "~2.2.9",
     "moment": "~2.4.0",
-    "extendr": "~2.1.0"
+    "extendr": "~2.1.0",
+    "miniview": "~1.0.0",
+    "spine-route": "~1.0.0",
+    "pointers": "~1.0.0"
   },
   "devDependencies": {
     "docpad-plugin-livereload": "~2.5.3",
