@@ -68,7 +68,7 @@
     "extendr": "~2.1.0",
     "miniview": "~1.0.0",
     "spine-route": "~1.0.0",
-    "pointers": "~1.0.0"
+    "pointers": "~1.1.0"
   },
   "devDependencies": {
     "docpad-plugin-livereload": "~2.5.3",

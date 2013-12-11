@@ -52,7 +52,7 @@ class App extends View
 		@$files.remove()
 
 		# Update the site listing
-		@point(Site.collection).view(SiteListItem).to(@$sitesList).bind()
+		@point(item:Site.collection, viewClass:SiteListItem, element:@$sitesList).bind()
 
 		# Apply
 		@onWindowResize()
@@ -193,7 +193,7 @@ class App extends View
 						$collectionList.val(@currentFileCollection.get('name'))
 
 					# Update the file listing
-					@point(files).view(FileListItem).to(@$filesList).bind()
+					@point(item:files, viewClass:FileListItem, element:@$filesList).bind()
 
 					# Apply
 					@setAppMode('site')
@@ -214,10 +214,10 @@ class App extends View
 					{$el, $toggleMeta, $links, $linkPage, $toggles, $toggleMeta, $togglePreview} = @
 
 					# View
-					@editView = editView = @point(@currentFile).view(FileEditItem).to(@$pageEditContainer).bind().getView()
+					@editView = editView = @point(item:@currentFile, viewClass:FileEditItem, element:@$pageEditContainer).bind().getView()
 
 					# Apply
-					@point(@currentFile).attributes('title', 'name', 'filename').to($linkPage)
+					@point(item:@currentFile, itemAttributes:['title', 'name', 'filename'], element:$linkPage)
 
 					# Bars
 					$toggles.removeClass('active')

@@ -48,25 +48,26 @@ class FileEditItem extends View
 			@getCollectionSelectValues('layouts').concat @getOtherSelectValues('author')
 		)
 
-		@point(item).attributes('layout').to($layout).bind()
-		@point(item).attributes('author').to($author).bind()
-		@point(item).attributes('source').to($source).bind()
-		@point(item).attributes('title', 'name', 'filename').to($title).update().bind()
+		@point(item:item, itemAttributes:['layout'], element:$layout).bind()
+		@point(item:item, itemAttributes:['author'], element:$author).bind()
+		@point(item:item, itemAttributes:['source'], element:$source).bind()
+		@point(item:item, itemAttributes:['title', 'name', 'filename'], element:$title, itemSetter:true).bind()
 
-		@point(item)
-			.attributes('url')
-			.to($previewbar)
-			.using ({$el, item}) ->
+		@point(
+			item: item
+			itemAttributes: ['url']
+			element:$previewbar
+			elementSetter: ({$el}) ->
 				$el.attr('src': item.get('site').get('url')+item.get('url'))
-			.bind()
+		).bind()
 
-		@point(item)
-			.attributes('date')
-			.to($date)
-			.using ({$el, value}) ->
-				if value?
-					$el.val moment(value).format('YYYY-MM-DD')
-			.bind()
+		@point(
+			item: item
+			itemAttributes:['date']
+			element:$date
+			elementSetter: ({el, value}) ->
+				$el.val moment(value).format('YYYY-MM-DD')  if value?
+		).bind()
 
 		# Editor
 		@editor = CodeMirror.fromTextArea($source.get(0), {
@@ -101,10 +102,11 @@ class FileListItem extends View
 		{item, $el, $title, $tags, $date} = @
 
 		# Apply
-		@point(item)
-			.attributes('title', 'name', 'relativePath')
-			.to($title)
-			.using ({$el, item}) ->
+		@point(
+			item: item
+			itemAttributes: ['title', 'name', 'relativePath']
+			element: $title
+			elementSetter: ({$el}) ->
 				title = item.get('title') or item.get('name')
 				relativePath = item.get('relativePath')
 				if title
@@ -112,21 +114,23 @@ class FileListItem extends View
 					$el.append('<br>'+relativePath)
 				else
 					$el.text(relativePath)
-			.bind()
+		).bind()
 
-		@point(item)
-			.attributes('tags')
-			.to($tags)
-			.using ({$el, value}) ->
+		@point(
+			item: item
+			itemAttributes: ['tags']
+			element: $tags
+			elementSetter: ({$el, value}) ->
 				$el.text (value or []).join(', ') or ''
-			.bind()
+		).bind()
 
-		@point(item)
-			.attributes('date')
-			.to($date)
-			.using ({$el, value}) ->
+		@point(
+			item: item
+			itemAttributes: ['date']
+			element: $date
+			elementSetter:({$el, value}) ->
 				$date.text value?.toLocaleDateString() or ''
-			.bind()
+		).bind()
 
 		# Chain
 		@
