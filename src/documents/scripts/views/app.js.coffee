@@ -217,7 +217,7 @@ class App extends View
 					@editView = editView = @point(item:@currentFile, viewClass:FileEditItem, element:@$pageEditContainer).bind().getView()
 
 					# Apply
-					@point(item:@currentFile, itemAttributes:['title', 'name', 'filename'], element:$linkPage)
+					@point(item:@currentFile, itemAttributes:['title', 'name', 'filename'], element:$linkPage).bind()
 
 					# Bars
 					$toggles.removeClass('active')
