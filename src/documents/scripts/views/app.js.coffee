@@ -182,7 +182,7 @@ class App extends View
 				# No File
 				unless @currentFile
 					# Update the collection listing
-					$collectionList = @$('.collection-list')
+					$collectionList = @$el.find('.collection-list')
 					if $collectionList.data('site') isnt @currentSite
 						$collectionList.data('site', @currentSite)
 						$collectionList.empty()
@@ -263,7 +263,7 @@ class App extends View
 	# A "add new website" button was clicked
 	# Show the new website modal
 	clickAddSite: (e) =>
-		@$('.site-add.modal').show()
+		@$el.find('.site-add.modal').show()
 		@
 
 	# The website modal's save button was clicked
@@ -274,9 +274,9 @@ class App extends View
 		e.stopPropagation()
 
 		# Extract
-		url   = (@$('.site-add .field-url :input').val() or '').replace(/\/+$/, '')
-		token = @$('.site-add .field-token :input').val() or ''
-		name  = @$('.site-add .field-name :input').val() or url.toLowerCase().replace(/^.+?\/\//, '')
+		url   = (@$el.find('.site-add .field-url :input').val() or '').replace(/\/+$/, '')
+		token = @$el.find('.site-add .field-token :input').val() or ''
+		name  = @$el.find('.site-add .field-name :input').val() or url.toLowerCase().replace(/^.+?\/\//, '')
 
 		# Default
 		url   or= null
@@ -290,7 +290,7 @@ class App extends View
 			alert 'need more site data'
 
 		# Hide the modal
-		@$('.site-add.modal').hide()
+		@$el.find('.site-add.modal').hide()
 
 		# Chain
 		@
@@ -303,7 +303,7 @@ class App extends View
 		e.stopPropagation()
 
 		# Hide the modal
-		@$('.site-add.modal').hide()
+		@$el.find('.site-add.modal').hide()
 
 		# Chain
 		@
