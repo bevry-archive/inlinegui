@@ -22,7 +22,7 @@ class CustomFileCollection extends Model
 	toJSON: ->
 		return _.omit(super(), ['files', 'site'])
 
-	url: ->
+	getSyncUrl: ->
 		site = @get.get('site')
 		siteUrl = site.get('url')
 		siteToken = site.get('token')

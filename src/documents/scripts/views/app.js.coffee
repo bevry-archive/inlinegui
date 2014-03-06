@@ -4,7 +4,7 @@ $ = window.$
 {Site} = require('../models/site')
 {SiteListItem} = require('./site')
 {FileEditItem, FileListItem} = require('./file')
-{wait, safe} = require('../util')
+{wait, thrower} = require('../util')
 
 # View
 class App extends View
@@ -73,7 +73,7 @@ class App extends View
 
 		# Fetch our site data
 		wait 0, =>
-			Site.collection.fetch next: =>
+			Site.collection.fetch null, =>
 				# Bind routes
 				routes =
 					'/': 'routeApp'
@@ -138,7 +138,6 @@ class App extends View
 	# This needs to be rewrote to use sockets or something
 	openApp: (opts={}) ->
 		# Prepare
-		opts ?= {}
 		opts.navigate ?= true
 
 		# Apply
@@ -158,7 +157,7 @@ class App extends View
 			return @
 
 		# Site
-		Site.collection.fetchItem item: @currentSite, next: (err, @currentSite) =>
+		Site.collection.fetchItem {item: @currentSite}, (err, @currentSite) =>
 			# Handle problems
 			throw err  if err
 			throw new Error('could not find site')  unless @currentSite
@@ -171,7 +170,7 @@ class App extends View
 
 			# Collection
 			# There will always be a collection, as we force it earlier
-			customFileCollections.fetchItem item: @currentFileCollection, next: (err, @currentFileCollection) =>
+			customFileCollections.fetchItem {item: @currentFileCollection}, (err, @currentFileCollection) =>
 				# Handle problems
 				throw err  if err
 				throw new Error('could not find collection')  unless @currentFileCollection
@@ -205,7 +204,7 @@ class App extends View
 					return @
 
 				# File
-				files.fetchItem item: @currentFile, next: (err, @currentFile) =>
+				files.fetchItem {item: @currentFile}, (err, @currentFile) =>
 					# Handle problems
 					throw err  if err
 					throw new Error('could not find file')  unless @currentFile
@@ -338,13 +337,13 @@ class App extends View
 			# Cancel
 			if $target.hasClass('button-cancel')
 				activate()
-				@editView.cancel next: ->
+				@editView.cancel {}, ->
 					deactivate()
 
 			# Save
 			else if $target.hasClass('button-save')
 				activate()
-				@editView.save next: ->
+				@editView.save {}, ->
 					deactivate()
 
 		# Chain
@@ -352,7 +351,7 @@ class App extends View
 
 	# Request
 	request: (opts={}, next) ->
-		opts.next ?= next  if next
+		next ?= thrower.bind(@)
 
 		@$loadbar
 			.removeClass('put post get delete')
@@ -376,20 +375,20 @@ class App extends View
 				# Are we actually an error
 				if data.success is false
 					err = new Error(data.message or 'An error occured with the request')
-					return safe(opts.next, err)
+					return next(err, data)
 
 				# Extract the data
 				data = data.data  if data.data?
 
 				# Forward
-				return safe(opts.next, null, data)
+				return next(null, data)
 
 			error: (jqXHR, textStatus, errorThrown) =>
 				# Done
 				@$loadbar.removeClass('active')
 
 				# Forward
-				return safe(opts.next, errorThrown, null)
+				return next(errorThrown, null)
 		)
 
 	# Handle menu effects
@@ -446,7 +445,7 @@ class App extends View
 		# Action
 		if $target.parents().andSelf().filter('.button-delete').length is 1
 			# Delete
-			controller = $row.data('controller')
+			controller = $row.data('view')
 			controller.item.destroy()
 			controller.destroy()
 		else
@@ -487,7 +486,7 @@ class App extends View
 		# Action
 		if $target.parents().andSelf().filter('.button-delete').length is 1
 			$row.fadeOut(5*1000)
-			item.sync method: 'delete', next: (err) ->
+			item.destroy {sync: true}, (err) ->
 				if err
 					$row.show()
 					throw err

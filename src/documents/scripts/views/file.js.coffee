@@ -4,6 +4,7 @@ _ = window._
 $ = window.$
 moment = require('moment')
 {View} = require('./base')
+{thrower} = require('../util')
 
 # View
 class FileEditItem extends View
@@ -78,14 +79,14 @@ class FileEditItem extends View
 		@
 
 	cancel: (opts={}, next) ->
-		opts.next ?= next  if next
+		next ?= thrower.bind(@)
 		@item.reset(opts)
-		opts.next?()
+		next()
 		@
 
 	save: (opts={}, next) ->
-		opts.next ?= next  if next
-		@item.sync(opts)
+		next ?= thrower.bind(@)
+		@item.sync(opts, next)
 		@
 
 # View

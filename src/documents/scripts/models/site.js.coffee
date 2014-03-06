@@ -4,7 +4,7 @@ _ = window._
 {File} = require('./file')
 {CustomFileCollection} = require('./customfilecollection')
 {TaskGroup} = require('taskgroup')
-{safe, slugify, wait, extractData, extractSyncOpts} = require('../util')
+{thrower, slugify, wait} = require('../util')
 
 # Model
 class Site extends Model
@@ -16,46 +16,45 @@ class Site extends Model
 		customFileCollections: null  # Collection of CustomFileCollection Models
 		files: null  # FileCollection Model
 
-	fetch:  (opts={}, next) ->
-		opts.next ?= next  if next
+	sync: (opts={}, next) ->
+		next ?= thrower.bind(@)
 
-		#console.log 'model fetch', opts
+		console.log 'site model sync', @, opts
 
-		site = @
-		siteUrl = site.get('url')
-		siteToken = site.get('token')
+		if opts.method is 'destroy'
+			next()
 
-		result = {}
+		else
+			site = @
+			siteUrl = site.get('url')
+			siteToken = site.get('token')
 
-		# Do our ajax requests in parallel
-		tasks = new TaskGroup(concurrency: 0).once 'complete', (err) =>
-			return next(err)  if err
-			@set @parse(result)
-			return next()
+			result = {}
 
-		# Fetch all the collections
-		tasks.addTask (complete) =>
-			app.request url: "#{siteUrl}/restapi/collections/?securityToken=#{siteToken}", next: (err, data) =>
-				return complete(err)  if err
-				result.customFileCollections = data
-				return complete()
+			# Do our ajax requests in parallel
+			tasks = new TaskGroup concurrency: 0, next: (err) =>
+				return next(err)  if err
+				console.log 'site model fetched', @, opts, result
+				@set @parse(result)
+				return next()
 
-		# Fetch all the files
-		tasks.addTask (complete) =>
-			app.request url: "#{siteUrl}/restapi/files/?securityToken=#{siteToken}", next: (err, data) =>
-				return complete(err)  if err
-				result.files = data
-				return complete()
+			# Fetch all the collections
+			tasks.addTask (complete) =>
+				app.request {url: "#{siteUrl}/restapi/collections/?securityToken=#{siteToken}"}, (err, data) =>
+					return complete(err)  if err
+					result.customFileCollections = data
+					return complete()
 
-		# Run our tasks
-		tasks.run()
+			# Fetch all the files
+			tasks.addTask (complete) =>
+				app.request {url: "#{siteUrl}/restapi/files/?securityToken=#{siteToken}"}, (err, data) =>
+					return complete(err)  if err
+					result.files = data
+					return complete()
 
-		@
+			# Run our tasks
+			tasks.run()
 
-	sync: (args...) ->
-		opts = extractSyncOpts(args)
-		console.log 'model sync', opts
-		Site.collection.sync(opts)
 		@
 
 	get: (key) ->
@@ -76,10 +75,10 @@ class Site extends Model
 	toJSON: ->
 		return _.omit(super(), ['customFileCollections', 'files'])
 
-	parse: (response, opts={}) ->
+	parse: ->
 		# Prepare
 		site = @
-		data = extractData(response)
+		data = super
 
 		if Array.isArray(data.customFileCollections)
 			# Add the site to each site collection
@@ -130,34 +129,13 @@ class Sites extends Collection
 	model: Site
 	collection: Sites
 
-	fetch: (opts={}, next) ->
-		opts.next ?= next  if next
+	getLocalStorageKey: -> 'sites'
 
-		#console.log 'collection fetch', opts
-		sites = JSON.parse(localStorage.getItem('sites') or 'null') or []
-
-		tasks = new TaskGroup concurrency: 0, next: (err) =>
-			@add(sites)
-			safe(opts.next, err, @)
-
-		sites.forEach (site, index) ->
-			tasks.addTask (complete) ->
-				site.id = index  # give it an id so that collection sync fires when destroying the item
-				sites[index] = new Site(site).fetch({}, complete)
-
-		tasks.run()
-
-		@
-
-	sync: (args...) ->
-		opts = extractSyncOpts(args)
-		console.log 'collection sync', opts
-		opts.success?()  # destroy it
-		wait 0, =>  # wait for colleciton remote events to fire
-			sites = JSON.stringify(@toJSON())
-			localStorage.setItem('sites', sites)
-			safe(opts.next, null, @)
-		@
+	constructor: ->
+		super
+		@on 'remove', (model) =>
+			console.log 'remove site from collection', @, model
+			@sync()
 
 	get: (id) ->
 		item = super or @findOne(

@@ -52,15 +52,15 @@ aside '.app', ->
 			form '.site-add-form', action:'', method:'PUT', ->
 				div '.field.field-url', ->
 					label -> 'Site URL'
-					input type:'text', value:'about:blank', ->
+					input type:'text', value:'http://localhost:9778', ->
 
 				div '.field.field-token', ->
 					label -> 'Security Token'
-					input type:'text', ->
+					input type:'text', value:'blah', ->
 
 				div '.field.field-name', ->
 					label -> 'Site Name'
-					input type:'text', ->
+					input type:'text', placeholder:'Optional', ->
 
 				input '.button.button-save', type:'submit', value:'Save'
 

@@ -1,7 +1,7 @@
 # Import
 _ = window._
 {Model, Collection} = require('./base')
-{safe, slugify, extractData, extractSyncOpts} = require('../util')
+{slugify} = require('../util')
 
 # Model
 class File extends Model
@@ -33,30 +33,14 @@ class File extends Model
 			else
 				super
 
-	sync: (args...) ->
-		opts = extractSyncOpts(args)
-
-		#console.log 'file sync', opts
-
+	getSyncUrl: ->
 		file = @
 		fileRelativePath = file.get('relativePath')
 		site = file.get('site')
 		siteUrl = site.get('url')
 		siteToken = site.get('token')
 
-		if opts.method isnt 'delete'
-			opts.data ?= _.pick(file.toJSON(), @metaAttributes)
-		opts.method ?= if @isNew() then 'put' else 'post'
-		opts.url ?= "#{siteUrl}/restapi/collection/database/#{fileRelativePath}?securityToken=#{siteToken}"
-
-		app.request opts, (err, data) =>
-			return safe(opts.next, err)  if err
-
-			@set @parse(data)
-
-			safe(opts.next, null, @)
-
-		@
+		return "#{siteUrl}/restapi/collection/database/#{fileRelativePath}?securityToken=#{siteToken}"
 
 	reset: ->
 		data = {}
@@ -70,9 +54,9 @@ class File extends Model
 	toJSON: ->
 		return _.omit(super(), ['site'])
 
-	parse: (response, opts) ->
+	parse: ->
 		# Prepare
-		data = extractData(response)
+		data = super
 
 		# Apply meta directly
 		for own key,value of data.meta
