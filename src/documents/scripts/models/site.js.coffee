@@ -19,41 +19,46 @@ class Site extends Model
 	sync: (opts={}, next) ->
 		next ?= thrower.bind(@)
 
-		console.log 'site model sync', @, opts
-
-		if opts.method is 'destroy'
+		if @ignoreSync(opts)
+			console.log 'sync ignored', @, opts
 			next()
 
 		else
-			site = @
-			siteUrl = site.get('url')
-			siteToken = site.get('token')
+			console.log 'sync performing', @, opts
 
-			result = {}
+			if opts.method is 'destroy'
+				next()
 
-			# Do our ajax requests in parallel
-			tasks = new TaskGroup concurrency: 0, next: (err) =>
-				return next(err)  if err
-				console.log 'site model fetched', @, opts, result
-				@set @parse(result)
-				return next()
+			else
+				site = @
+				siteUrl = site.get('url')
+				siteToken = site.get('token')
 
-			# Fetch all the collections
-			tasks.addTask (complete) =>
-				app.request {url: "#{siteUrl}/restapi/collections/?securityToken=#{siteToken}"}, (err, data) =>
-					return complete(err)  if err
-					result.customFileCollections = data
-					return complete()
+				result = {}
 
-			# Fetch all the files
-			tasks.addTask (complete) =>
-				app.request {url: "#{siteUrl}/restapi/files/?securityToken=#{siteToken}"}, (err, data) =>
-					return complete(err)  if err
-					result.files = data
-					return complete()
+				# Do our ajax requests in parallel
+				tasks = new TaskGroup concurrency: 0, next: (err) =>
+					return next(err)  if err
+					console.log 'site model fetched', @, opts, result
+					@set @parse(result)
+					return next()
 
-			# Run our tasks
-			tasks.run()
+				# Fetch all the collections
+				tasks.addTask (complete) =>
+					app.request {url: "#{siteUrl}/restapi/collections/?securityToken=#{siteToken}"}, (err, data) =>
+						return complete(err)  if err
+						result.customFileCollections = data
+						return complete()
+
+				# Fetch all the files
+				tasks.addTask (complete) =>
+					app.request {url: "#{siteUrl}/restapi/files/?securityToken=#{siteToken}"}, (err, data) =>
+						return complete(err)  if err
+						result.files = data
+						return complete()
+
+				# Run our tasks
+				tasks.run()
 
 		@
 

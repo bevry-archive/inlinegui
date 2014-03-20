@@ -24,5 +24,20 @@ waiter = (delay,fn) ->
 sendMessage = (data) ->
 	parent.postMessage(data, '*')
 
+within = (date, ms) ->
+	now = new Date()
+	return (date? is false) or (now.getTime() < date.getTime()+ms)
+
+ignoreSync = (opts) ->
+	if opts.method is 'save'
+		return false
+	else if @syncing is true
+		return true
+	else if @synced and within(@synced, 1000*10)  # 10 seconds
+		return true
+	else
+		return false
+
+
 # Export
-module.exports = {wait, thrower, slugify, extractData, waiter, sendMessage}
+module.exports = {wait, thrower, slugify, extractData, waiter, sendMessage, within, ignoreSync}

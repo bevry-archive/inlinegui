@@ -73,7 +73,9 @@ class App extends View
 
 		# Fetch our site data
 		wait 0, =>
-			Site.collection.fetch null, =>
+			Site.collection.fetch null, (err) =>
+				throw err  if err
+
 				# Bind routes
 				routes =
 					'/': 'routeApp'
