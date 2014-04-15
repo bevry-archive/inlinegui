@@ -116,7 +116,7 @@ docpadConfig = {
 			# Bundle the scripts the editor uses together
 			commands = [
 				[
-					"#{rootPath}/node_modules/.bin/browserify"
+					"#{rootPath}/node_modules/.bin/browserify.cmd"
 					"-i", "backbone"
 					"-i", "exoskeleton"
 					"-i", "underscore"
