@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>   <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>  <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>  <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+
+    <link rel="stylesheet" href="css/saasy.css">
+  </head>
+  <body>
+  <div id="saasy-container">
+    <div id="saasy-menu" class="saasy-page">
+      <nav id="main-menu">
+        <h1 class="hide-text">Saasy Main Menu</h1>
+        <ul>
+          <li><a href="#">Site</a></li>
+          <li><a href="#" class="active">Page</a></li>
+        </ul>
+      </nav>
+      <aside id="side-menu">
+        <div id="saasy-msg">Last Saved: 08/04/13 07:11</div>
+        <a href="#" class="button save">Save</a>
+        <a href="#" class="button cancel">Cancel</a>
+        <a href="#site" id="skip-to-content" class="icon-down">Skip to Content</a>
+      </aside>
+    </div>
+    <div id="saasy-content">
+      <form>
+        <div class="half-column">
+          <div class="row">
+            <label for="content-title">Title</label>
+            <input type="text" name="content-title" id="content-title" />
+          </div>
+          <div class="row half-column">
+            <label for="content-publish-date">Publish Date</label>
+            <input type="date" name="content-publish-date" id="content-publish-date" />
+          </div>
+          <div class="row half-column">  
+            <label for="content-author">Author</label>
+            <input type="text" name="content-author" id="content-author" />
+          </div>
+        </div>
+        <div class="half-column">
+          <div class="row half-column">
+            <label for="content-meta-desc">Meta Description</label>
+            <textarea id="content-meta-desc" name="meta-desc"></textarea>
+          </div>
+          <div class="row half-column">
+            <label for="content-tags">Tags</label>
+            <textarea id="content-tags" name="content-tags"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <iframe src="http://www.myplanetdigital.com/" width="100%" height="1000" id="site"></iframe>
+
+  <script src="js/jquery.min.js"></script>
+  <script src="js/main.js"></script>
+  </body>
+</html>

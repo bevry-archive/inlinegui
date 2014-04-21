@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+	<!-- Standard Meta -->
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+	<meta name="viewport" content="width=device-width" />
+
+	<!-- Site Properities -->
+	<title>Inline GUI by Web Write</title>
+	<meta name="description" content="A decoupled Inline GUI/CMS for any backend!" />
+	<meta name="keywords" content="inline, gui, web write, contenteditable, html5, cms, decoupled, backend agnostic" />
+
+	<!-- DocPad Meta -->
+	<meta name="generator" content="DocPad v6.64.2" />
+
+	<!-- DocPad Styles + Our Own -->
+	<link  rel="stylesheet" href="http://webwrite.github.io/inlinegui/vendor/normalize.css" /><link  rel="stylesheet" href="http://webwrite.github.io/inlinegui/vendor/h5bp.css" /><link  rel="stylesheet" href="http://webwrite.github.io/inlinegui/vendor/codemirror/codemirror.css" /><link  rel="stylesheet" href="http://webwrite.github.io/inlinegui/styles/app.css" />
+</head>
+<body>
+	<aside class="app"><aside class="loadbar"></aside><nav class="menu"><span class="left"><span class="link link-admin">Admin</span><span class="link link-site">Site</span><span class="link link-page">Page</span></span><span class="right show-page"><span class="button button-save" data-loadclassname="save"><span class="active-text">Saving...</span><span class="inactive-text">Save</span></span><span class="button button-cancel" data-loadclassname="cancel"><span class="active-text">Cancelling...</span><span class="inactive-text">Cancel</span></span><span class="toggle toggle-source"><span class="icon icon-code"></span></span><span class="toggle toggle-meta"><span class="icon icon-info"></span></span><span class="toggle toggle-preview"><span class="icon icon-globe"></span></span></span></nav><section class="login modal main show-login"><img class="button button-login" alt="Login" src="http://webwrite.github.io/inlinegui/images/login.png" width="95px" height="25px" /></section><section class="site-add modal main show-admin"><header><span class="title">Add Site</span></header><div class="body"><form class="site-add-form" action="" method="PUT"><div class="field field-url"><label>Site URL</label><input type="text" value="http://localhost:9778" /></div><div class="field field-token"><label>Security Token</label><input type="text" value="blah" /></div><div class="field field-name"><label>Site Name</label><input type="text" placeholder="Optional" /></div><input class="button button-save" type="submit" value="Save" /><button class="button button-cancel">Cancel</button></form></div></section><aside class="site-list-container"><section class="site-list main show-admin"><header><span class="title">Sites</span><ul class="button button-drop"><li class="button button-add-site">Add Site<span class="icon icon-plus"></span></li></ul></header><div class="body"><div class="content-table sites"><div class="content-row content-row-header"><div class="content-cell content-cell-name">Location</div></div><div class="content-row content-row-site" data-site="1"><div class="content-cell content-cell-name"><span class="content-name" title="Open site">http://localhost:9778</span><span class="content-buttons"><span class="button button-delete" title="Delete file"><span class="icon icon-trash"></span>Delete</span></span></div></div></div></div></section></aside><aside class="page-list-container"><section class="page-list main show-site"><header><span class="title"><select class="collection-list"><option>Database</option><option>Documents</option><option>Layouts</option></select></span><ul class="button-drop"><li>Add new<span class="icon icon-plus"></span></li><li class="button button-add-document">Document</li><li class="button button-add-upload">Upload</li></ul></header><div class="body"><div class="content-table files"><div class="content-row content-row-header"><div class="content-cell content-cell-name">Title</div><div class="content-cell content-cell-tags">Tags</div><div class="content-cell content-cell-date">Date</div></div><div class="content-row content-row-file"><div class="content-cell content-cell-name"><span class="content-name" title="Open file">File title</span><span class="content-buttons"><span class="button button-edit" title="Edit file"><span class="icon icon-edit"></span>Edit</span><span class="button button-delete" title="Delete file"><span class="icon icon-trash"></span>Delete</span></span></div><div class="content-cell content-cell-tags">File tags</div><div class="content-cell content-cell-date">File date</div></div></div></div></section></aside><aside class="page-edit-container"><section class="page-edit show-page"><section class="page-source main"><header class="title">Page Source</header><div class="body"><textarea></textarea></div></section><section class="page-meta main"><header class="title">Page Settings</header><div class="body"><div class="field field-title"><label>Title</label><input type="text" /></div><div class="field field-date"><label>Publish Date</label><input type="date" /></div><div class="field field-author"><label>Author</label><select><option>Benjamin Lupton</option></select></div><div class="field field-layout"><label>Layout</label><select><option>default</option></select></div></div></section><iframe class="page-preview"></iframe></section></aside></aside>
+
+	<!-- DocPad Scripts + Our Own -->
+	<script defer="defer"  src="http://webwrite.github.io/inlinegui/vendor/log.js"></script><script src="//code.jquery.com/jquery-2.0.3.min.js"></script>
+<script>window.jQuery || document.write('<script defer="defer" src="http://webwrite.github.io/inlinegui/vendor/jquery-2.0.3.min.js"></sc'+'ript>')</script>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.0/lodash.min.js"></script>
+<script>window._ || document.write('<script defer="defer" src="http://webwrite.github.io/inlinegui/vendor/lodash.min.js"></sc'+'ript>')</script>
+
+<!--<script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js"></script>-->
+<script>window.Backbone || document.write('<script defer="defer" src="http://webwrite.github.io/inlinegui/vendor/backbone-original.js"></sc'+'ript>')</script>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/codemirror/3.20.0/codemirror.min.js"></script>
+<script>window.CodeMirror || document.write('<script defer="defer" src="http://webwrite.github.io/inlinegui/vendor/codemirror/codemirror.js"></sc'+'ript>')</script><script defer="defer"  src="//login.persona.org/include.js"></script><script defer="defer"  src="http://webwrite.github.io/inlinegui/scripts/app.js"></script>
+</body>
+</html>
