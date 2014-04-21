@@ -1,3 +1,9 @@
+### cson
+standalone: true
+browserify:
+	ignore: ['backbone', 'exoskeleton', 'underscore', 'jquery']
+###
+
 # Only run if we are inside the iframe
 return  if parent is self
 

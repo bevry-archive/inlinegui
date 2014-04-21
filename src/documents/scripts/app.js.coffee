@@ -1,5 +1,7 @@
-###
+### cson
 standalone: true
+browserify:
+	ignore: ['backbone', 'exoskeleton', 'underscore', 'jquery']
 ###
 
 # Import

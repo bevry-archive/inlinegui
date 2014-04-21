@@ -63,7 +63,7 @@ docpadConfig = {
 
 				"//login.persona.org/include.js"
 
-				'/scripts/app-bundled.js'
+				'/scripts/app.js'
 			]
 
 
@@ -106,41 +106,6 @@ docpadConfig = {
 	# Here we can define handlers for events that DocPad fires
 	# You can find a full listing of events on the DocPad Wiki
 	events:
-
-		# Write After
-		# Used to bundle the editor
-		writeAfter: (opts,next) ->
-			# Prepare
-			{rootPath, outPath} = @docpad.getConfig()
-
-			# Bundle the scripts the editor uses together
-			commands = [
-				[
-					"#{rootPath}/node_modules/.bin/browserify"
-					"-i", "backbone"
-					"-i", "exoskeleton"
-					"-i", "underscore"
-					"-i", "jquery"
-					"#{outPath}/scripts/app.js"
-					"-o", "#{outPath}/scripts/app-bundled.js"
-				],
-
-				[
-					"#{rootPath}/node_modules/.bin/browserify"
-					"-i", "backbone"
-					"-i", "exoskeleton"
-					"-i", "underscore"
-					"-i", "jquery"
-					"#{outPath}/scripts/inline.js"
-					"-o", "#{outPath}/scripts/inline-bundled.js"
-				]
-			]
-
-			# Execute
-			require('safeps').spawnMultiple(commands, {cwd:rootPath, output:true}, next)
-
-			# Chain
-			@
 
 		# Render Document
 		renderDocument: (opts) ->

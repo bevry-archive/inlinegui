@@ -49,8 +49,8 @@
     "npm": ">=1.2"
   },
   "dependencies": {
-    "docpad": "~6.64.0",
-    "docpad-plugin-coffeescript": "~2.3.0",
+    "docpad": "~6.64.2",
+    "docpad-plugin-coffeescript": "~2.4.0",
     "docpad-plugin-eco": "~2.0.3",
     "docpad-plugin-marked": "~2.2.0",
     "docpad-plugin-partials": "~2.9.0",
@@ -62,13 +62,12 @@
     "dominject": "~1.0.2",
     "taskgroup": "~3.3.5",
     "query-engine": "~1.5.7",
-    "browserify": "~3.14.1",
-    "safeps": "~2.2.9",
-    "moment": "~2.5.0",
+    "moment": "~2.6.0",
     "extendr": "~2.1.0",
     "miniview": "~1.2.0",
     "spine-route": "~1.0.0",
-    "pointers": "~1.1.0"
+    "pointers": "~1.1.0",
+    "docpad-plugin-browserifydocs": "~2.1.0"
   },
   "devDependencies": {
     "docpad-plugin-livereload": "~2.6.0",
