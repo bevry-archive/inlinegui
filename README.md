@@ -2,7 +2,7 @@
 
 <!-- BADGES/ -->
 
-
+[![Bountysource](https://api.bountysource.com/badge/tracker?tracker_id=230967)](https://www.bountysource.com/trackers/230967-webwrite-inlinegui?utm_source=230967&utm_medium=shield&utm_campaign=TRACKER_BADGE)
 [![Gittip donate button](http://img.shields.io/gittip/bevry.png)](https://www.gittip.com/bevry/ "Donate weekly to this project using Gittip")
 [![Flattr donate button](http://img.shields.io/flattr/donate.png?color=yellow)](http://flattr.com/thing/344188/balupton-on-Flattr "Donate monthly to this project using Flattr")
 [![PayPayl donate button](http://img.shields.io/paypal/donate.png?color=yellow)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=QB8GQPZAH84N6 "Donate once-off to this project using Paypal")
