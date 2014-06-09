@@ -18,6 +18,8 @@ Add support to your own backend by implementing the [Web Write Spec](https://git
 
 **Under heavy and fast development. [Watch the Dev Update Videos to get the latest info!](https://cloudup.com/cF6jns2vGKv)**
 
+Also see the [Docport project](https://github.com/docport), which uses WebWrite's InlineGUI and turns it into a [DocPad](http://docpad.org) Cloud PaaS. Docport has many open Bounties which of the work at Docport goes back into WebWrite. 
+[![Bountysource](https://api.bountysource.com/badge/tracker?tracker_id=1083298)](https://www.bountysource.com/trackers/1083298-docport-s-fork-of-webwrite-inlinegui?utm_source=1083298&utm_medium=shield&utm_campaign=TRACKER_BADGE)
 
 ## Previews
 
@@ -38,6 +40,8 @@ Add support to your own backend by implementing the [Web Write Spec](https://git
 ## Usage
 
 Go to https://github.com/webwrite/inlinegui/ and connect your webwrite enabled website.
+
+See ["Getting Started Locally"](https://github.com/webwrite/inlinegui/wiki/Getting-Started-Locally) in our Wiki. 
 
 To enable Webwrite for DocPad, check out the [inlinegui plugin](http://docpad.org/plugin/inlinegui).
 
@@ -90,7 +94,8 @@ These amazing people have contributed code to this project:
 - ginader (https://github.com/ginader) - [view contributions](https://github.com/webwrite/inlinegui/commits?author=ginader)
 - Lisa Hong <lisa.h@myplanetdigital.com> (https://github.com/lisaej) - [view contributions](https://github.com/webwrite/inlinegui/commits?author=lisaej)
 - Neil Taylor <neil.t@myplanetdigital.com> (https://github.com/neilbaylorrulez) - [view contributions](https://github.com/webwrite/inlinegui/commits?author=neilbaylorrulez)
-
+- Michael "Mikeumus" Mooring <mike@betabulls.com> (https://github.com/mikeumus) - [view contributions](https://github.com/webwrite/inlinegui/commits?author=mikeumus)
+- 
 [Become a contributor!](https://github.com/webwrite/inlinegui/blob/master/Contributing.md#files)
 
 <!-- /BACKERS -->
