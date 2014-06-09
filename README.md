@@ -18,7 +18,7 @@ Add support to your own backend by implementing the [Web Write Spec](https://git
 
 **Under heavy and fast development. [Watch the Dev Update Videos to get the latest info!](https://cloudup.com/cF6jns2vGKv)**
 
-Also see the [Docport project](https://github.com/docport), which uses WebWrite's InlineGUI and turns it into a [DocPad](http://docpad.org) Cloud PaaS. Docport has many open Bounties which of the work at Docport goes back into WebWrite. 
+Also see the [Docport project](https://github.com/docport), which uses WebWrite's InlineGUI and turns it into a [DocPad](http://docpad.org) Cloud PaaS. Docport has many open Bounties of which the work at Docport goes back into WebWrite. 
 [![Bountysource](https://api.bountysource.com/badge/tracker?tracker_id=1083298)](https://www.bountysource.com/trackers/1083298-docport-s-fork-of-webwrite-inlinegui?utm_source=1083298&utm_medium=shield&utm_campaign=TRACKER_BADGE)
 
 ## Previews
