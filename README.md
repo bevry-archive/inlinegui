@@ -95,7 +95,7 @@ These amazing people have contributed code to this project:
 - Lisa Hong <lisa.h@myplanetdigital.com> (https://github.com/lisaej) - [view contributions](https://github.com/webwrite/inlinegui/commits?author=lisaej)
 - Neil Taylor <neil.t@myplanetdigital.com> (https://github.com/neilbaylorrulez) - [view contributions](https://github.com/webwrite/inlinegui/commits?author=neilbaylorrulez)
 - Michael "Mikeumus" Mooring <mike@betabulls.com> (https://github.com/mikeumus) - [view contributions](https://github.com/webwrite/inlinegui/commits?author=mikeumus)
-- 
+
 [Become a contributor!](https://github.com/webwrite/inlinegui/blob/master/Contributing.md#files)
 
 <!-- /BACKERS -->
